@@ -11,8 +11,7 @@ public:
     int food=1000;
     void Food_variation(){
         int food_p=number*(rand() % 3);
-        int food_c=number*(rand()%3)*log((number*(rand()%2))+2)
-                ;
+        int food_c=number*log(log(number+2));
         food=food+food_p-food_c;
         std::cout<<"Food: ";
         std::cout<<food<<std::endl;
@@ -45,11 +44,15 @@ public:
 int main() {
     Pop pop1;
     int i=0;
+    float innovation=1.0;
     while(i<10000000000000){
         pop1.Update();
         i++;
+        innovation=sqrt(log(i));
         std::cout<<"    Number of iterations: ";
-        std::cout<<i<<std::endl;
+        std::cout<<i;
+        std::cout<<"    Innovation: ";
+        std::cout<<innovation<<std::endl;
     }
 
     system("pause");

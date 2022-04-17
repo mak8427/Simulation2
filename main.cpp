@@ -1,58 +1,32 @@
 #include <iostream>
 #include <stdio.h>      /* printf */
 #include <math.h>
-#include <Windows.h>
+#include <chrono>
+#include <thread>
+#include <string>
+#include "Factory.h"
+#include "good.h"
 
+#include "Pop.h"
 
-class Pop {
-public:
-    int number=100;
-    int money=50;
-    int food=1000;
-    void Food_variation(){
-        int food_p=number*(rand() % 3);
-        int food_c=number*log(log(number+2));
-        food=food+food_p-food_c;
-        std::cout<<"Food: ";
-        std::cout<<food<<std::endl;
+using namespace std;
 
-    }
-    void Pop_variation(){
-        if (food<0){
-            if (number<0){
-                number=1;
-                food=0;
-            }
-            else{
-                number=number-1;
-                food=0;
-            }
-        }
-        else{
-            number++;
-        }
-        std::cout<<"Number: ";
-        std::cout<<number;
-    }
-    void Update(){
-        Pop::Food_variation();
-        Pop::Pop_variation();
-
-    }
-};
 
 int main() {
-    Pop pop1;
+    Pop pop1(100,10,200);
     int i=0;
     float innovation=1.0;
-    while(i<10000000000000){
+    while(i<1000000){
         pop1.Update();
         i++;
         innovation=sqrt(log(i));
-        std::cout<<"    Number of iterations: ";
-        std::cout<<i;
-        std::cout<<"    Innovation: ";
-        std::cout<<innovation<<std::endl;
+        cout<<"    Number of iterations: ";
+        cout<<i;
+        cout<<"    Innovation: ";
+        cout<<innovation<<std::endl;
+        this_thread::sleep_for(chrono::milliseconds(100) );
+
+
     }
 
     system("pause");

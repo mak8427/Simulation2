@@ -12,6 +12,7 @@
 #include "Factory.h"
 using namespace std;
 class Factory;
+class Good;
 class Pop {
 public:
     int number=100;

@@ -9,15 +9,15 @@
 #include "Pop.h"
 using namespace std;
 class Pop;
+class Good;
 class Factory{
 public:
     float cash=1000;
     Pop* workers;
     Good* good_type;
-    Factory(Pop* insert_pop, Good* insert_good){
-
-        workers=insert_pop;
-        good_type=insert_good;
+    Factory(Pop insert_pop,Good insert_good){
+        workers=&insert_pop;
+        good_type=&insert_good;
     };
     void Update(){
 
@@ -28,8 +28,8 @@ private:
         return t;
     };
     auto Production(){
-        int production=round(workers.number*Troughput());
-        float money_gained=production*good_type.value;
+        int production=round(workers->number*Troughput());
+        float money_gained=production*(good_type->value);
         return money_gained;
     };
 

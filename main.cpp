@@ -13,7 +13,13 @@ using namespace std;
 
 
 int main() {
-    Pop pop1(100,10,200);
+    Good test(1);
+    Factory factory1 = new Factory();
+    Factory* puntatore=&factory1;
+    Pop pop1(100,10,200,puntatore);
+    Pop* puntatores = &pop1;
+    factory1= factory1(puntatores,test);
+
     int i=0;
     float innovation=1.0;
     while(i<1000000){

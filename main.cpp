@@ -14,7 +14,7 @@ using namespace std;
 
 int main() {
     Good test(1);
-    Factory factory1 = new Factory();
+    Factory factory1 = new Factory()s;
     Factory* puntatore=&factory1;
     Pop pop1(100,10,200,puntatore);
     Pop* puntatores = &pop1;

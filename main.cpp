@@ -6,30 +6,32 @@
 #include <string>
 #include "Factory.h"
 #include "good.h"
-
 #include "Pop.h"
 
 using namespace std;
 
 
 int main() {
-    Good test(1);
-    Factory factory1 = new Factory()s;
-    Factory* puntatore=&factory1;
-    Pop pop1(100,10,200,puntatore);
-    Pop* puntatores = &pop1;
-    factory1= factory1(puntatores,test);
+    Factory* test_factory;
+    Good test_good(1);
+    Pop test_pop(100,100,100,test_factory);
+    Factory c(&test_pop, &test_good);
+    test_factory= &c;
+
 
     int i=0;
     float innovation=1.0;
     while(i<1000000){
-        pop1.Update();
+        test_factory->Update();
+        test_pop.Update();
         i++;
         innovation=sqrt(log(i));
         cout<<"    Number of iterations: ";
         cout<<i;
         cout<<"    Innovation: ";
         cout<<innovation<<std::endl;
+        cout<<test_factory->cash<<std::endl;
+
         this_thread::sleep_for(chrono::milliseconds(100) );
 
 

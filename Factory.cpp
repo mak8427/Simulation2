@@ -16,15 +16,16 @@ float Factory::Troughput(){
 void Factory::Production(){
     int production=round(workers->number*Troughput());
     float money_gained=production*(good_type->value);
-    std::cout<<workers->number;
+
     cash=cash+money_gained;
 };
 void Factory::Salary(){
     salary=cash*0.9;
 
+    cash=cash-salary;
+
 };
 float Factory::salary_(){
-    std::cout<<cash;
     return salary;
 
 

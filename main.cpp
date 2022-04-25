@@ -16,6 +16,7 @@ int main() {
     Good test_good(20);
     Pop test_pop(100,100,100,test_factory);
     test_factory= new  Factory(&test_pop, &test_good);
+    test_pop = Pop(100,100,100,test_factory);
 
 
 

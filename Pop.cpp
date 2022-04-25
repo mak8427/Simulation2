@@ -7,9 +7,9 @@
 
 void Pop::Food_variation(){
     int food_c=number*log(log(number+2));
-    food=food+-food_c;
-    cout<<"Food: ";
-    cout<<food<<std::endl;
+    food=food-food_c;
+
+    cout<<"Food: "<<food<<"    ";
 };
 void  Pop::Pop_variation(){
     if (food<0){
@@ -31,9 +31,11 @@ void  Pop::Pop_variation(){
 };
 
 void Pop::Money(){
-    money=money+factory->salary_();
-    food=food+round(money*1);
-    std::cout<<factory->_<<endl;
+    money=money+factory->salary;
+    food=food+round(money);
+    cout<<endl<<factory->salary;
+    money=0;
+
 
 
 }

@@ -13,10 +13,11 @@ using namespace std;
 
 int main() {
     Factory* test_factory;
-    Good test_good(1);
+    Good test_good(20);
     Pop test_pop(100,100,100,test_factory);
-    Factory c(&test_pop, &test_good);
-    test_factory= &c;
+    test_factory= new  Factory(&test_pop, &test_good);
+
+
 
 
     int i=0;
@@ -27,10 +28,7 @@ int main() {
         i++;
         innovation=sqrt(log(i));
         cout<<"    Number of iterations: ";
-        cout<<i;
-        cout<<"    Innovation: ";
-        cout<<innovation<<std::endl;
-        cout<<test_factory->cash<<std::endl;
+        cout<<i<<std::endl;
 
         this_thread::sleep_for(chrono::milliseconds(100) );
 

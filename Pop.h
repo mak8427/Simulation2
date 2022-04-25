@@ -22,7 +22,7 @@ class Good;
 class Pop {
 public:
     int number=100;
-    int money=50;
+    float money=50;
     int food=1000;
     Factory* factory;
     void  Food_variation();
@@ -38,7 +38,7 @@ public:
         number=insert_number;
         money=insert_money;
         food=insert_food;
-        factory= insert_factory;
+        factory = insert_factory;
     }
 
 };

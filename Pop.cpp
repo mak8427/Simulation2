@@ -31,7 +31,9 @@ void  Pop::Pop_variation(){
 };
 
 void Pop::Money(){
-    money=money+factory->salary;
-    food=food+money*1;
+    money=money+factory->salary_();
+    food=food+round(money*1);
+    std::cout<<factory->_<<endl;
+
 
 }

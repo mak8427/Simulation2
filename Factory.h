@@ -12,6 +12,7 @@ class Factory {
 public:
     float cash = 1000;
     float salary=1000;
+    float _ =5;
     Pop* workers;
     Good* good_type;
 
@@ -19,13 +20,16 @@ public:
         workers = insert_pop;
         good_type = insert_good;
     };
-    void Update(){
-        void Production();
-        void Salary();
-    }
     float Troughput();
     void Production();
     void Salary();
+    float salary_();
+
+    void Update(){
+         Factory::Production();
+         Factory::Salary();
+    }
+
 
 };
 #endif //TEST1_FACTORY_H

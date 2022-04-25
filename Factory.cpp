@@ -6,9 +6,10 @@
 #include "Pop.h"
 #include "Good.h"
 
+#include <iostream>
+#include <stdio.h>
 
-
- float Factory::Troughput(){
+float Factory::Troughput(){
     float t=1;
     return t;
 };
@@ -19,9 +20,12 @@ void Factory::Production(){
     cash=cash+money_gained;
 };
 void Factory::Salary(){
-    salary=1000;
-    cash=cash-salary;
+    salary=cash*0.9;
 
+};
+float Factory::salary_(){
+    std::cout<<cash;
+    return salary;
 
 
 };

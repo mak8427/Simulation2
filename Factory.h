@@ -7,18 +7,18 @@
 
 using namespace std;
 class Pop;
-class Good;
+class Market;
 class Factory {
 public:
     float cash = 1000;
     float salary=1000;
     float _ =5;
     Pop* workers;
-    Good* good_type;
+    Market* markets;
 
-    Factory(Pop* insert_pop, Good* insert_good) {
+    Factory(Pop* insert_pop, Market* insert_good){
         workers = insert_pop;
-        good_type = insert_good;
+        markets = insert_good;
     };
     float Troughput();
     void Production();

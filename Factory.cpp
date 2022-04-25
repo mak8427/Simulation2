@@ -4,19 +4,19 @@
 
 #include "Factory.h"
 #include "Pop.h"
-#include "Good.h"
+#include "Market.h"
 
 #include <iostream>
 #include <stdio.h>
 
 float Factory::Troughput(){
-    float t=1;
+    float t=1.4;
     return t;
 };
 void Factory::Production(){
     int production=round(workers->number*Troughput());
-    float money_gained=production*(good_type->value);
-
+    float money_gained=production*(markets->food_value);
+    markets->food_produced=markets->food_produced+production;
     cash=cash+money_gained;
 };
 void Factory::Salary(){

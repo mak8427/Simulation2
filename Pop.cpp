@@ -4,12 +4,14 @@
 
 #include "Pop.h"
 #include "Factory.h"
+#include "Market.h"
+
 
 void Pop::Food_variation(){
     int food_c=number*log(log(number+2));
     food=food-food_c;
-
     cout<<"Food: "<<food<<"    ";
+    markets->food_consumed=markets->food_consumed+food_c;
 };
 void  Pop::Pop_variation(){
     if (food<0){
@@ -32,7 +34,7 @@ void  Pop::Pop_variation(){
 
 void Pop::Money(){
     money=money+factory->salary;
-    food=food+round(money);
+    food=food+round(money/markets->food_value);
     cout<<endl<<factory->salary;
     money=0;
 

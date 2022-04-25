@@ -18,13 +18,14 @@
 
 using namespace std;
 class Factory;
-class Good;
+class Market;
 class Pop {
 public:
     int number=100;
     float money=50;
     int food=1000;
     Factory* factory;
+    Market* markets;
     void  Food_variation();
     void  Pop_variation();
     void  Money();
@@ -34,11 +35,12 @@ public:
         Pop::Money();
 
     };
-    Pop(int insert_number, int insert_money ,int insert_food, Factory* insert_factory){
+    Pop(int insert_number, int insert_money ,int insert_food, Factory* insert_factory,Market* insert_Market){
         number=insert_number;
         money=insert_money;
         food=insert_food;
         factory = insert_factory;
+        markets=insert_Market;
     }
 
 };

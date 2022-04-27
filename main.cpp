@@ -1,6 +1,8 @@
 #include <iostream>
 #include <stdio.h>      /* printf */
 #include <math.h>
+#include <vector>
+
 #include <chrono>
 #include <thread>
 #include <string>
@@ -12,11 +14,13 @@ using namespace std;
 
 
 int main() {
+    std::vector< Factory* > arr;
     Factory* test_factory;
     Market test_market;
     Pop test_pop(100,100,100,test_factory,&test_market);
     test_factory= new  Factory(&test_pop, &test_market);
     test_pop = Pop(100,100,100,test_factory,&test_market);
+
 
 
 

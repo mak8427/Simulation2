@@ -11,7 +11,7 @@ void Market::Food_value_change(){
         food_value=food_value+0.1;
     }
     else{
-        food_value=food_value-0.1;
+        food_value=food_value;
     }
 
 

@@ -26,14 +26,13 @@ void  Pop::Pop_variation(){
     else{
         number++;
     };
-
+    cout<<number<<"  ";
 
 };
 
 void Pop::Money(){
     money=money+factory->salary;
     food=food+round(money/markets->food_value);
-    cout<<endl<<factory->salary;
     money=0;
 
 

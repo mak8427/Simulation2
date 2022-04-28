@@ -23,9 +23,9 @@ auto Vector_pop_factory(int longs, Market test_market) {
         Pop test_pop(randoms(),randoms(),randoms(),test_factory,&test_market);
         test_factory= new  Factory(&test_pop, &test_market);
         test_pop = Pop(randoms(),randoms(),randoms(),test_factory,&test_market);
-        factories.push_back(new  Factory(&test_pop, &test_market));
-        pops.push_back(Pop(randoms(),randoms(),randoms(),factories[i],&test_market));
-        delete test_factory;
+        factories[i] = test_factory;
+        pops[i]= Pop(randoms(),randoms(),randoms(),factories[i],&test_market);
+        factories[i]=new Factory(&pops[i], &test_market);
     }
     struct retVals {        // Declare a local structure
         vector<Pop> i1;
@@ -37,7 +37,7 @@ auto Vector_pop_factory(int longs, Market test_market) {
 
 int main() {
     Market test_market;
-   auto [pops_l,factories_l]  = Vector_pop_factory(10,test_market);
+   auto [pops_l,factories_l]  = Vector_pop_factory(5,test_market);
 
 
 
@@ -49,10 +49,13 @@ int main() {
             entity.Update();
         }
         cout<<endl;
-        for (Factory*& entity : factories_l) {
+        factories_l[0]->Update();
+        factories_l[1]->Update();
+        factories_l[2]->Update();
+        factories_l[3]->Update();
+        factories_l[4]->Update();
+        factories_l[5]->Update();
 
-            entity->Update();
-        }
         test_market.Update();
         i++;
         cout<<"    Number of iterations: ";
@@ -63,7 +66,7 @@ int main() {
 
         test_market.food_consumed=0;
         test_market.food_produced=0;
-        this_thread::sleep_for(chrono::milliseconds(100) );
+        this_thread::sleep_for(chrono::milliseconds(200) );
 
 
     }

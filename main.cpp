@@ -23,8 +23,9 @@ auto Vector_pop_factory(int longs, Market test_market) {
         Pop test_pop(randoms(),randoms(),randoms(),test_factory,&test_market);
         test_factory= new  Factory(&test_pop, &test_market);
         test_pop = Pop(randoms(),randoms(),randoms(),test_factory,&test_market);
-        factories.push_back(test_factory);
-        pops.push_back(test_pop);
+        factories.push_back(new  Factory(&test_pop, &test_market));
+        pops.push_back(Pop(randoms(),randoms(),randoms(),factories[i],&test_market));
+        delete test_factory;
     }
     struct retVals {        // Declare a local structure
         vector<Pop> i1;

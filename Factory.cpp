@@ -17,7 +17,7 @@ void Factory::Production(){
     int production=round(workers->number*Troughput());
     float money_gained=production*(markets->food_value);
     markets->food_produced=markets->food_produced+production;
-    cout<<workers->number<<" ";
+    cout<<" _ "<<workers->number<<" _ ";
     cash=cash+money_gained;
 };
 void Factory::Salary(){

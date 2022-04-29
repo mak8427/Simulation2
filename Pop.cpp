@@ -34,7 +34,5 @@ void Pop::Money(){
     money=money+factory->salary;
     food=food+round(money/markets->food_value);
     money=0;
-
-
-
+    
 }

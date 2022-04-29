@@ -35,6 +35,7 @@ public:
         Pop::Money();
 
     };
+    Pop(){};
     Pop(int insert_number, int insert_money ,int insert_food, Factory* insert_factory,Market* insert_Market){
         number=insert_number;
         money=insert_money;

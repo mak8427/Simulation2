@@ -15,6 +15,7 @@ public:
     float _ =5;
     Pop* workers;
     Market* markets;
+    Factory(){};
 
     Factory(Pop* insert_pop, Market* insert_good){
         workers = insert_pop;

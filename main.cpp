@@ -47,16 +47,15 @@ int main() {
         Factory *test_factory;
         factories.push_back(test_factory);
         pops.push_back(Pop(randoms(), randoms(), randoms(), factories[i], &test_market));
-        pops[i]=Pop(randoms(), randoms(), randoms(), factories[i], &test_market);
-        factories[i]=new  Factory (&pops[i],&test_market);
-
     }
     for(int i=0;i<=longs;i++) {
         factories[i]=new  Factory (&pops[i],&test_market);
     }
-
+    for(int i=0;i<=longs;i++) {
+        pops[i]=Pop(randoms(), randoms(), randoms(), factories[i], &test_market);
+    }
     int i=0;
-    while(i<100){
+    while(i<1000){
         for (Pop& entity : pops) {
             entity.Update();
         }
@@ -76,7 +75,7 @@ int main() {
 
         test_market.food_consumed=0;
         test_market.food_produced=0;
-        this_thread::sleep_for(chrono::milliseconds(200) );
+        this_thread::sleep_for(chrono::milliseconds(100) );
 
 
     }

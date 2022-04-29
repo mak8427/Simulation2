@@ -33,6 +33,8 @@ void  Pop::Pop_variation(){
 void Pop::Money(){
     money=money+factory->salary;
     food=food+round(money/markets->food_value);
+    cout<<" _ "<<factory->salary<<" _ ";
+
     money=0;
     
 }

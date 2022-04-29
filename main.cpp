@@ -40,21 +40,20 @@ auto Vector_pop_factory(int longs, Market test_market) {
 int main() {
     Market test_market;
     auto [pops_l,factories_l]  = Vector_pop_factory(5,test_market);
-    int longs=4;
+    int longs=15;
     vector< Factory* > factories;
     vector< Pop > pops;
     for(int i=0;i<=longs;i++) {
         Factory *test_factory;
-        Pop test_pop(randoms(), 100, 100, test_factory, &test_market);
-        test_factory = new Factory(&test_pop, &test_market);
-        test_pop = Pop(randoms(), randoms(), randoms(), test_factory, &test_market);
         factories.push_back(test_factory);
         pops.push_back(Pop(randoms(), randoms(), randoms(), factories[i], &test_market));
         pops[i]=Pop(randoms(), randoms(), randoms(), factories[i], &test_market);
-
+        factories[i]=new  Factory (&pops[i],&test_market);
 
     }
-
+    for(int i=0;i<=longs;i++) {
+        factories[i]=new  Factory (&pops[i],&test_market);
+    }
 
     int i=0;
     while(i<100){

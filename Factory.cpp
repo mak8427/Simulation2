@@ -10,8 +10,8 @@
 #include <stdio.h>
 
 float Factory::Troughput(){
-    float t=1.4;
-    return t;
+    float t=(log(investment+10)/log(10000));
+    return 1;
 };
 void Factory::Production(){
     int production=round(workers->number*Troughput());
@@ -20,9 +20,11 @@ void Factory::Production(){
     cash=cash+money_gained;
 };
 void Factory::Salary(){
-    salary=cash*0.9;
+    float investment_add=cash*0.1;
+    salary=cash*0.8;
+    investment=investment_add+investment;
 
-    cash=cash-salary;
+    cash=cash-salary-investment_add;
 
 };
 float Factory::salary_(){

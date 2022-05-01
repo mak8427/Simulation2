@@ -8,10 +8,12 @@
 using namespace std;
 void Market::Food_value_change(){
     if (food_produced<food_consumed) {
-        food_value=food_value+0.1;
+        float rect=float(food_consumed)/float(food_produced)-1;
+        food_value=food_value+rect*food_value;
     }
     else{
-        food_value=food_value;
+        float rect=1/(float(food_produced)/float(food_consumed));
+        food_value=food_value*rect;
     }
 
 

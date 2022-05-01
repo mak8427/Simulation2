@@ -10,6 +10,7 @@ class Pop;
 class Market;
 class Factory {
 public:
+    float investment=0;
     float cash = 1000;
     float salary=1000;
     float _ =5;

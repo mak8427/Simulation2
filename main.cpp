@@ -56,11 +56,12 @@ int main() {
     }
     int i=0;
     while(i<1000){
-        for (Pop& entity : pops) {
-            entity.Update();
-        }
+
         for (Factory*& entity : factories) {
             entity->Update();
+        }
+        for (Pop& entity : pops) {
+            entity.Update();
         }
         cout<<endl;
 

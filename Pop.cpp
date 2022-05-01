@@ -8,7 +8,7 @@
 
 
 void Pop::Food_variation(){
-    int food_c=number*log(log(number+2));
+    int food_c=number*1;
     food=food-food_c;
     markets->food_consumed=markets->food_consumed+food_c;
 };
@@ -26,14 +26,12 @@ void  Pop::Pop_variation(){
     else{
         number++;
     };
-    cout<<number<<"  ";
 
 };
 
 void Pop::Money(){
     money=money+factory->salary;
     food=food+round(money/markets->food_value);
-    cout<<" _ "<<factory->salary<<" _ ";
 
     money=0;
     

@@ -2,6 +2,7 @@
 #include <stdio.h>      /* printf */
 #include <math.h>
 #include <vector>
+#include <fstream>
 
 #include <chrono>
 #include <thread>
@@ -36,7 +37,6 @@ auto Vector_pop_factory(int longs, Market test_market) {
     return retVals{pops,factories};
 };
 
-
 int main() {
     Market test_market;
     auto [pops_l,factories_l]  = Vector_pop_factory(5,test_market);
@@ -56,7 +56,9 @@ int main() {
     }
     int i=0;
     int n_tot=0;
-    while(i<1000){
+    ofstream myfile;
+    myfile.open ("data.csv");
+    while(i<3000){
 
         for (Factory*& entity : factories) {
             entity->Update();
@@ -79,13 +81,16 @@ int main() {
         cout<<"     food consumed "<<test_market.food_consumed;
         cout<<"     food produced "<<test_market.food_produced<<std::endl;
 
+
+
+        myfile<<i<<','<<n_tot<<','<<n_tot/longs<<','<<test_market.food_consumed<<','<<test_market.food_produced<<','<<test_market.food_value<<endl;
+        //this_thread::sleep_for(chrono::milliseconds(100) );
         test_market.food_consumed=0;
         test_market.food_produced=0;
-        this_thread::sleep_for(chrono::milliseconds(100) );
 
 
     }
-
+    myfile.close();
     system("pause");
     return 0;
 }

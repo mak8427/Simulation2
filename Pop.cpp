@@ -28,8 +28,15 @@ void  Pop::Pop_variation(){
 
 void Pop::Money(){
     money=money+factory->salary;
-    food=food+round(money/markets->food_value);
+    if (money<=(food_consumed()+1)*markets->food_value){
+        food=food+round(money/markets->food_value);
+        money=0;
+    }
+    else{
+        food=food+food_consumed()+1;
+        money=money-(food_consumed()+1)*markets->food_value;
+        cloth=cloth+round(money/markets->cloth_value);
+    }
 
-    money=0;
     
 }

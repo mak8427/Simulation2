@@ -16,18 +16,13 @@ float Factory::Troughput(){
     return t;
 };
 void Factory::Production(){
-    std::random_device rd;
-    std::mt19937 mt(rd());
-    std::uniform_real_distribution<double> dist(1.0, 10.0);
-    int production=round(sqrt(workers->number)+cos(workers->number)*dist(mt)+4.5-log(workers->number));
+    int production=round(sqrt(workers->number)+cos(workers->number)+3.5-log(workers->number));
     float money_gained=production*(markets->food_value);
     markets->food_produced=markets->food_produced+production;
     cash=cash+money_gained;
 };
 void Factory::Salary(){
     salary=cash*1;
-    investment=investment;
-
     cash=cash-salary;
 
 };

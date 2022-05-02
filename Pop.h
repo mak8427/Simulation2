@@ -23,6 +23,7 @@ class Pop {
 public:
     int number=100;
     float money=50;
+    float cloth=10;
     int food=1000;
     Factory* factory;
     Market* markets;

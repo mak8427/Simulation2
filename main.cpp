@@ -56,17 +56,20 @@ int main() {
     }
     int i=0;
     int n_tot=0;
+    int n_cloth=0;
     ofstream myfile;
     myfile.open ("data.csv");
-    while(i<3000){
+    while(i<1000){
 
         for (Factory*& entity : factories) {
             entity->Update();
         }
         n_tot=0;
+        n_cloth=0;
         for (Pop& entity : pops) {
             entity.Update();
             n_tot=entity.number+n_tot;
+            n_cloth=n_cloth+entity.cloth;
         }
         cout<<endl;
 
@@ -79,6 +82,7 @@ int main() {
         cout<<"     tot numbers: "<<n_tot;
         cout<<"     avg numbers: "<<n_tot/longs;
         cout<<"     food consumed "<<test_market.food_consumed;
+        cout<<"     cloth  "<<n_cloth/n_tot;
         cout<<"     food produced "<<test_market.food_produced<<std::endl;
 
 

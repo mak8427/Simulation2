@@ -1,6 +1,7 @@
 //
 // Created by dadoi on 25/04/2022.
 //
+#include <math.h>
 
 #include "Market.h"
 #include <iostream>

@@ -11,20 +11,19 @@
 
 float Factory::Troughput(){
     float t=(log(investment+10)/log(10000));
-    return 1;
+    return t;
 };
 void Factory::Production(){
-    int production=round(workers->number*Troughput());
+    int production=round(sqrt(workers->number)+cos(workers->number)+3.5-log(workers->number));
     float money_gained=production*(markets->food_value);
     markets->food_produced=markets->food_produced+production;
     cash=cash+money_gained;
 };
 void Factory::Salary(){
-    float investment_add=cash*0.1;
-    salary=cash*0.8;
-    investment=investment_add+investment;
+    salary=cash*1;
+    investment=investment;
 
-    cash=cash-salary-investment_add;
+    cash=cash-salary;
 
 };
 float Factory::salary_(){

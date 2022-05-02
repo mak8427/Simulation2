@@ -31,8 +31,8 @@ public:
     void  Money();
     void Update(){
         Pop::Food_variation();
-        Pop::Pop_variation();
         Pop::Money();
+        Pop::Pop_variation();
 
     };
     Pop(){};

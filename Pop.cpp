@@ -8,7 +8,7 @@
 
 
 void Pop::Food_variation(){
-    int food_c=number*1;
+    int food_c=round(sqrt(float(number)));
     food=food-food_c;
     markets->food_consumed=markets->food_consumed+food_c;
 };

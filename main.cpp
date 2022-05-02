@@ -18,16 +18,16 @@ int randoms(){
 auto Vector_pop_factory(int longs, Market test_market) {
     vector< Factory* > factories;
     vector< Pop > pops;
-    for(int i=0;i<=longs;i++){
-        Factory* test_factory;
-        Pop test_pop(100,100,100,test_factory,&test_market);
-        test_factory= new  Factory(&test_pop, &test_market);
-        test_pop = Pop(100,100,100,test_factory,&test_market);
+    for(int i=0;i<=longs;i++) {
+        Factory *test_factory;
         factories.push_back(test_factory);
-        pops.push_back(test_pop);
-
-
-
+        pops.push_back(Pop(randoms(), randoms(), randoms(), factories[i], &test_market));
+    }
+    for(int i=0;i<=longs;i++) {
+        factories[i]=new  Factory (&pops[i],&test_market);
+    }
+    for(int i=0;i<=longs;i++) {
+        pops[i]=Pop(randoms(), randoms(), randoms(), factories[i], &test_market);
     }
     struct retVals {        // Declare a local structure
         vector<Pop> i1;
@@ -40,7 +40,7 @@ auto Vector_pop_factory(int longs, Market test_market) {
 int main() {
     Market test_market;
     auto [pops_l,factories_l]  = Vector_pop_factory(5,test_market);
-    int longs=15;
+    int longs=1500;
     vector< Factory* > factories;
     vector< Pop > pops;
     for(int i=0;i<=longs;i++) {
@@ -55,13 +55,16 @@ int main() {
         pops[i]=Pop(randoms(), randoms(), randoms(), factories[i], &test_market);
     }
     int i=0;
+    int n_tot=0;
     while(i<1000){
 
         for (Factory*& entity : factories) {
             entity->Update();
         }
+        n_tot=0;
         for (Pop& entity : pops) {
             entity.Update();
+            n_tot=entity.number+n_tot;
         }
         cout<<endl;
 
@@ -71,6 +74,8 @@ int main() {
         cout<<"    Number of iterations: ";
         cout<<i<<std::endl;
         cout<<"food price: "<<test_market.food_value;
+        cout<<"     tot numbers: "<<n_tot;
+        cout<<"     avg numbers: "<<n_tot/longs;
         cout<<"     food consumed "<<test_market.food_consumed;
         cout<<"     food produced "<<test_market.food_produced<<std::endl;
 

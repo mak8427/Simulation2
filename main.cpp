@@ -10,6 +10,7 @@
 #include "Factory.h"
 #include "Market.h"
 #include "Pop.h"
+#include "Government.h"
 
 using namespace std;
 int randoms(){
@@ -54,6 +55,8 @@ int main() {
     for(int i=0;i<=longs;i++) {
         pops[i]=Pop(randoms(), randoms(), randoms(), factories[i], &test_market);
     }
+    Government gov(factories,&pops);
+
     int i=0;
     int n_tot=0;
     int n_cloth=0;

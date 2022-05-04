@@ -3,4 +3,4 @@ project(Test1)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(Test1 main.cpp Pop.cpp Pop.h Factory.cpp Factory.h Market.cpp Market.h)
+add_executable(Test1 main.cpp Pop.cpp Pop.h Factory.cpp Factory.h Market.cpp Market.h Government.cpp Government.h)

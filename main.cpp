@@ -55,7 +55,7 @@ int main() {
     for(int i=0;i<=longs;i++) {
         pops[i]=Pop(randoms(), randoms(), randoms(), factories[i], &test_market);
     }
-    Government gov(factories,&pops);
+    Government govs(factories,&pops);
 
     int i=0;
     int n_tot=0;

@@ -17,52 +17,32 @@ int randoms(){
     int v= rand() % 300 + 1;
     return v;
 };
-auto Vector_pop_factory(int longs, Market test_market) {
-    vector< Factory* > factories;
-    vector< Pop > pops;
-    for(int i=0;i<=longs;i++) {
-        Factory *test_factory;
-        factories.push_back(test_factory);
-        pops.push_back(Pop(randoms(), randoms(), randoms(), factories[i], &test_market));
-    }
-    for(int i=0;i<=longs;i++) {
-        factories[i]=new  Factory (&pops[i],&test_market);
-    }
-    for(int i=0;i<=longs;i++) {
-        pops[i]=Pop(randoms(), randoms(), randoms(), factories[i], &test_market);
-    }
-    struct retVals {        // Declare a local structure
-        vector<Pop> i1;
-        vector<Factory*> i2;
-    };
-    return retVals{pops,factories};
-};
 
 int main() {
     Market test_market;
-    auto [pops_l,factories_l]  = Vector_pop_factory(5,test_market);
-    int longs=1500;
+    Government govs;
+    int longs=20;
     vector< Factory* > factories;
     vector< Pop > pops;
     for(int i=0;i<=longs;i++) {
         Factory *test_factory;
         factories.push_back(test_factory);
-        pops.push_back(Pop(randoms(), randoms(), randoms(), factories[i], &test_market));
+        pops.push_back(Pop(randoms(), randoms(), randoms(), factories[i], &test_market,&govs));
     }
     for(int i=0;i<=longs;i++) {
-        factories[i]=new  Factory (&pops[i],&test_market);
+        factories[i]=new  Factory (&pops[i],&test_market,&govs);
     }
     for(int i=0;i<=longs;i++) {
-        pops[i]=Pop(randoms(), randoms(), randoms(), factories[i], &test_market);
+        pops[i]=Pop(randoms(), randoms(), randoms(), factories[i], &test_market,&govs);
     }
-    Government govs(factories,&pops);
+    govs=Government(&factories,&pops);
 
     int i=0;
     int n_tot=0;
     int n_cloth=0;
     ofstream myfile;
     myfile.open ("data.csv");
-    while(i<1000){
+    while(i<100){
 
         for (Factory*& entity : factories) {
             entity->Update();
@@ -75,9 +55,8 @@ int main() {
             n_cloth=n_cloth+entity.cloth;
         }
         cout<<endl;
-
-
         test_market.Update();
+        govs.Update();
         i++;
         cout<<"    Number of iterations: ";
         cout<<i<<std::endl;
@@ -85,7 +64,7 @@ int main() {
         cout<<"     tot numbers: "<<n_tot;
         cout<<"     avg numbers: "<<n_tot/longs;
         cout<<"     food consumed "<<test_market.food_consumed;
-        cout<<"     cloth  "<<n_cloth/n_tot;
+        cout<<"     cloth  "<<n_cloth/n_tot<<endl;
         cout<<"     food produced "<<test_market.food_produced<<std::endl;
 
 

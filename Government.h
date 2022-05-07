@@ -12,15 +12,18 @@ using namespace std;
 
 class Government {
 public:
-  vector< Factory*>* fact;
-  vector< Pop*>* pops;
-    Government(vector< Factory*>* x ,vector< Pop*>* y){
-      fact=x;
-      pops=y;
-
-
-  }
-
+    float Reserve=0;
+    vector< Factory*>* fact_;
+    vector< Pop>* pop_;
+    Government(vector<Factory*>* x ,vector<Pop>* y){
+      fact_=x;
+      pop_=y;
+    }
+    Government(){}
+    void Update(){
+        Taxation();
+    };
+    void Taxation();
 
 };
 

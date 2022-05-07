@@ -7,6 +7,7 @@
 
 using namespace std;
 class Pop;
+class Government;
 class Market;
 class Factory {
 public:
@@ -15,12 +16,14 @@ public:
     float salary=1000;
     float _ =5;
     Pop* workers;
+    Government* gov;
     Market* markets;
     Factory(){};
 
-    Factory(Pop* insert_pop, Market* insert_good){
+    Factory(Pop* insert_pop, Market* insert_good,Government* insert_gov){
         workers = insert_pop;
         markets = insert_good;
+        gov=insert_gov;
     };
     float Troughput();
     void Production();

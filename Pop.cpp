@@ -27,6 +27,7 @@ void  Pop::Pop_variation(){
 };
 
 void Pop::Money(){
+    float salary=factory->salary * gov->tax_rate;
     money=money+factory->salary;
     if (money<=(food_consumed()+1)*markets->food_value){
         food=food+round(money/markets->food_value);

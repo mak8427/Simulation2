@@ -11,8 +11,12 @@
 #include <iostream>
 #include <stdio.h>
 using namespace std;
-void Government::Taxation(){
+void Government::Census(){
     for (auto & i : *pop_) {
-        cout<<reserve;
+        n_tot=n_tot+i.number;
     }
+}
+void Government::Reset(){
+    cout<<n_tot;
+    n_tot=0;
 }

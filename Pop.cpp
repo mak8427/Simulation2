@@ -5,7 +5,7 @@
 #include "Pop.h"
 #include "Factory.h"
 #include "Market.h"
-
+# include "Government.h"
 float Pop::food_consumed(){
     int f=round(sqrt(float(number)));
     return f;
@@ -27,8 +27,9 @@ void  Pop::Pop_variation(){
 };
 
 void Pop::Money(){
-    float salary=factory->salary * gov->tax_rate;
-    money=money+factory->salary;
+    float salary=factory->salary *(1-gov->tax_rate);
+    gov->reserve=gov->reserve+gov->tax_rate*factory->salary;
+    money=money+salary;
     if (money<=(food_consumed()+1)*markets->food_value){
         food=food+round(money/markets->food_value);
         money=0;

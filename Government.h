@@ -14,6 +14,8 @@ class Government {
 public:
     float reserve=0;
     float tax_rate=0.1;
+    int n_tot=0;
+
     vector< Factory*>* fact_;
     vector< Pop>* pop_;
     Government(vector<Factory*>* x ,vector<Pop>* y,float z){
@@ -23,9 +25,10 @@ public:
     }
     Government(){}
     void Update(){
-        Taxation();
+        Census();
     };
-    void Taxation();
+    void Census();
+    void Reset();
 
 };
 

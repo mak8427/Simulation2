@@ -42,16 +42,14 @@ int main() {
     int n_cloth=0;
     ofstream myfile;
     myfile.open ("data.csv");
-    while(i<100){
+    while(i<1000){
 
         for (Factory*& entity : factories) {
             entity->Update();
         }
-        n_tot=0;
         n_cloth=0;
         for (Pop& entity : pops) {
             entity.Update();
-            n_tot=entity.number+n_tot;
             n_cloth=n_cloth+entity.cloth;
         }
         cout<<endl;
@@ -61,18 +59,19 @@ int main() {
         cout<<"    Number of iterations: ";
         cout<<i<<std::endl;
         cout<<"food price: "<<test_market.food_value;
-        cout<<"     tot numbers: "<<n_tot;
-        cout<<"     avg numbers: "<<n_tot/longs;
+        cout<<"     tot numbers: "<<govs.n_tot;
+        cout<<"     avg numbers: "<<govs.n_tot/longs;
         cout<<"     food consumed "<<test_market.food_consumed;
-        cout<<"     cloth  "<<n_cloth/n_tot<<endl;
+        cout<<"     cloth  "<<n_cloth/govs.n_tot<<endl;
         cout<<"     food produced "<<test_market.food_produced<<std::endl;
 
 
 
-        myfile<<i<<','<<n_tot<<','<<n_tot/longs<<','<<test_market.food_consumed<<','<<test_market.food_produced<<','<<test_market.food_value<<endl;
+        myfile<<i<<','<<govs.n_tot<<','<<govs.n_tot/longs<<','<<test_market.food_consumed<<','<<test_market.food_produced<<','<<test_market.food_value<<endl;
         //this_thread::sleep_for(chrono::milliseconds(100) );
         test_market.food_consumed=0;
         test_market.food_produced=0;
+        govs.Reset();
 
 
     }

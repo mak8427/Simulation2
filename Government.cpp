@@ -15,8 +15,12 @@ void Government::Census(){
     for (auto & i : *pop_) {
         n_tot=n_tot+i.number;
     }
+    for (auto & i : *fact_) {
+        gdp=gdp+i->production * market->food_value;
+    }
 }
 void Government::Reset(){
     cout<<n_tot;
     n_tot=0;
+    gdp=0;
 }

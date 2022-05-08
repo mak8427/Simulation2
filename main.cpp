@@ -35,7 +35,7 @@ int main() {
     for(int i=0;i<=longs;i++) {
         pops[i]=Pop(randoms(), randoms(), randoms(), factories[i], &test_market,&govs);
     }
-    govs=Government(&factories,&pops,0.1);
+    govs=Government(&factories,&pops,0.1, &test_market);
 
     int i=0;
     int n_tot=0;
@@ -63,11 +63,12 @@ int main() {
         cout<<"     avg numbers: "<<govs.n_tot/longs;
         cout<<"     food consumed "<<test_market.food_consumed;
         cout<<"     cloth  "<<n_cloth/govs.n_tot<<endl;
+        cout<<"     gdp "<<govs.gdp;
         cout<<"     food produced "<<test_market.food_produced<<std::endl;
 
 
 
-        myfile<<i<<','<<govs.n_tot<<','<<govs.n_tot/longs<<','<<test_market.food_consumed<<','<<test_market.food_produced<<','<<test_market.food_value<<endl;
+        myfile<<i<<','<<govs.n_tot<<','<<govs.n_tot/longs<<','<<test_market.food_consumed<<','<<test_market.food_produced<<','<<test_market.food_value<<','<<govs.gdp<<endl;
         //this_thread::sleep_for(chrono::milliseconds(100) );
         test_market.food_consumed=0;
         test_market.food_produced=0;

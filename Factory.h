@@ -14,6 +14,7 @@ public:
     float investment=0;
     float cash = 1000;
     float salary=1000;
+    int production=0;
     float _ =5;
     Pop* workers;
     Government* gov;

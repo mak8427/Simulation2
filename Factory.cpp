@@ -16,7 +16,7 @@ float Factory::Troughput(){
     return t;
 };
 void Factory::Production(){
-    int production=round(sqrt(workers->number)+cos(workers->number)+3.5-log(workers->number));
+    production=round(sqrt(workers->number)+cos(workers->number)+3.5-log(workers->number));
     float money_gained=production*(markets->food_value);
     markets->food_produced=markets->food_produced+production;
     cash=cash+money_gained;

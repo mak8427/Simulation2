@@ -3,7 +3,6 @@
 #include <math.h>
 #include <vector>
 #include <fstream>
-
 #include <chrono>
 #include <thread>
 #include <string>

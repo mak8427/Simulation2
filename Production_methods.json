@@ -1,0 +1,31 @@
+{
+  "Food": {
+    "Production_methods": {
+      "PM_1": {
+        "Throughput": 1,
+        "Investment_relation": 0.1
+      }
+     },
+    "Ownership_type": {
+      "Standard": {
+        "Number_of_pop_type": 2,
+        "Farmers":0.95,
+        "Owners": 0.05 }
+      }
+  },
+  "Cloth": {
+    "Production_methods": {
+      "PM_1": {
+        "Throughput": 1,
+        "Investment_relation": 0.1
+      }
+    },
+    "Ownership_type": {
+      "Standard": {
+        "Number_of_pop_type": 2,
+        "Farmers":0.90,
+        "Owners": 0.10 }
+    }
+
+  }
+}

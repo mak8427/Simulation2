@@ -42,7 +42,7 @@ int main() {
     int n_cloth=0;
     ofstream myfile;
     myfile.open ("data.csv");
-    while(i<1000){
+    while(i<3000){
 
         for (Factory*& entity : factories) {
             entity->Update();
@@ -64,6 +64,7 @@ int main() {
         cout<<"     food consumed "<<test_market.food_consumed;
         cout<<"     cloth  "<<n_cloth/govs.n_tot<<endl;
         cout<<"     gdp "<<govs.gdp;
+        cout<<"     reserve "<<govs.reserve;
         cout<<"     food produced "<<test_market.food_produced<<std::endl;
 
 

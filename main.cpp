@@ -1,6 +1,9 @@
 #include <iostream>
 #include <stdio.h>      /* printf */
 #include <math.h>
+#include <map>
+
+
 #include <vector>
 #include <fstream>
 #include <chrono>
@@ -17,10 +20,9 @@ int randoms(){
     return v;
 };
 
-int main() {
+auto CREATOR(int longs){
     Market test_market;
     Government govs;
-    int longs=20;
     vector< Factory* > factories;
     vector< Pop > pops;
     for(int i=0;i<=longs;i++) {
@@ -34,10 +36,34 @@ int main() {
     for(int i=0;i<=longs;i++) {
         pops[i]=Pop(randoms(), randoms(), randoms(), factories[i], &test_market,&govs);
     }
+
+}
+
+
+int main() {
+    Market test_market;
+    Government govs;
+    //CREATOR AND ALLOCATOR
+    int longs = 20;
+    vector<Factory *> factories;
+    vector<Pop> pops;
+    for (int i = 0; i <= longs; i++) {
+        Factory *test_factory;
+        factories.push_back(test_factory);
+        pops.push_back(Pop(randoms(), randoms(), randoms(), factories[i], &test_market, &govs));
+    }
+    for (int i = 0; i <= longs; i++) {
+        factories[i] = new Factory(&pops[i], &test_market, &govs);
+    }
+    for (int i = 0; i <= longs; i++) {
+        pops[i] = Pop(randoms(), randoms(), randoms(), factories[i], &test_market, &govs);
+    }
+
     govs=Government(&factories,&pops,0.1, &test_market);
 
+    CREATOR(20);
+
     int i=0;
-    int n_tot=0;
     int n_cloth=0;
     ofstream myfile;
     myfile.open ("data.csv");

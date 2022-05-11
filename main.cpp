@@ -2,24 +2,30 @@
 #include <stdio.h>      /* printf */
 #include <math.h>
 #include <map>
-
-
+#include <fstream>
 #include <vector>
 #include <fstream>
 #include <chrono>
 #include <thread>
+#include "lib/json.hpp"
 #include <string>
 #include "Factory.h"
 #include "Market.h"
 #include "Pop.h"
 #include "Government.h"
-
+using namespace nlohmann;
 using namespace std;
 int randoms(){
     int v= rand() % 300 + 1;
     return v;
 };
 
+typedef struct{
+    vector< Factory* > a;
+    vector< Pop > b;
+    Government c;
+    Market d;
+}ret_struct;
 auto CREATOR(int longs){
     Market test_market;
     Government govs;
@@ -37,10 +43,23 @@ auto CREATOR(int longs){
         pops[i]=Pop(randoms(), randoms(), randoms(), factories[i], &test_market,&govs);
     }
 
+    ret_struct returned;
+    returned.a=factories;
+    returned.b= pops;
+    returned.c =govs;
+    returned.d = test_market;
+    return returned ;
+
+
+
+
 }
 
 
 int main() {
+    std::ifstream f("Production_methods.json");
+    json j = json::parse(f);
+    std::cout << j << std::endl;
     Market test_market;
     Government govs;
     //CREATOR AND ALLOCATOR
@@ -61,7 +80,8 @@ int main() {
 
     govs=Government(&factories,&pops,0.1, &test_market);
 
-    CREATOR(20);
+
+
 
     int i=0;
     int n_cloth=0;

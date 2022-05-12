@@ -9,7 +9,7 @@
 #include <iostream>
 #include <stdio.h>
 
-
+//test
 
 float Factory::Troughput(){
     float t=(log(investment+10)/log(10000));

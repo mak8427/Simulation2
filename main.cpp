@@ -57,7 +57,7 @@ auto CREATOR(int longs){
 
 
 int main() {
-    std::ifstream f("Production_methods.json");
+    std::ifstream f("../Production_methods.json");
     json j = json::parse(f);
     std::cout << j << std::endl;
     Market test_market;

@@ -9,10 +9,10 @@
 #include <thread>
 #include "lib/json.hpp"
 #include <string>
-#include "Factory.h"
-#include "Market.h"
-#include "Pop.h"
-#include "Government.h"
+#include "Agents/Factory.h"
+#include "Agents/Market.h"
+#include "Agents/Pop.h"
+#include "Agents/Government.h"
 using namespace nlohmann;
 using namespace std;
 int randoms(){

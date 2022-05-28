@@ -7,6 +7,7 @@
 #include <fstream>
 #include <chrono>
 #include <thread>
+#include <d3d9.h>
 #include "lib/json.hpp"
 #include <string>
 #include "Agents/Factory.h"
@@ -20,40 +21,7 @@ int randoms(){
     return v;
 };
 
-typedef struct{
-    vector< Factory* > a;
-    vector< Pop > b;
-    Government c;
-    Market d;
-}ret_struct;
-auto CREATOR(int longs){
-    Market test_market;
-    Government govs;
-    vector< Factory* > factories;
-    vector< Pop > pops;
-    for(int i=0;i<=longs;i++) {
-        Factory *test_factory;
-        factories.push_back(test_factory);
-        pops.push_back(Pop(randoms(), randoms(), randoms(), factories[i], &test_market,&govs));
-    }
-    for(int i=0;i<=longs;i++) {
-        factories[i]=new  Factory (&pops[i],&test_market,&govs);
-    }
-    for(int i=0;i<=longs;i++) {
-        pops[i]=Pop(randoms(), randoms(), randoms(), factories[i], &test_market,&govs);
-    }
 
-    ret_struct returned;
-    returned.a=factories;
-    returned.b= pops;
-    returned.c =govs;
-    returned.d = test_market;
-    return returned ;
-
-
-
-
-}
 
 
 int main() {
@@ -78,7 +46,7 @@ int main() {
         pops[i] = Pop(randoms(), randoms(), randoms(), factories[i], &test_market, &govs);
     }
 
-    govs=Government(&factories,&pops,0.1, &test_market);
+    govs=Government(&factories,&pops,0, &test_market);
 
 
 

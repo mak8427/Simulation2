@@ -13,7 +13,7 @@ using namespace std;
 class Government {
 public:
     float reserve=0;
-    float tax_rate=0.1;
+    float tax_rate=0;
     float gdp=0;
     int n_tot=0;
     Market* market;

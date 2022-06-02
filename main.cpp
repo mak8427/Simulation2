@@ -16,8 +16,8 @@
 #include "Agents/Government.h"
 using namespace nlohmann;
 using namespace std;
-int randoms(){
-    int v= rand() % 300 + 1;
+int randoms(int y){
+    int v= rand() % y + 1;
     return v;
 };
 
@@ -27,7 +27,7 @@ int randoms(){
 int main() {
     std::ifstream f("../Production_methods.json");
     json j = json::parse(f);
-    std::cout << j << std::endl;
+    std::cout << j["Cloth"]["Production_methods"]["PM_1"] << std::endl;
     Market test_market;
     Government govs;
     //CREATOR AND ALLOCATOR
@@ -37,13 +37,13 @@ int main() {
     for (int i = 0; i <= longs; i++) {
         Factory *test_factory;
         factories.push_back(test_factory);
-        pops.push_back(Pop(randoms(), randoms(), randoms(), factories[i], &test_market, &govs));
+        pops.push_back(Pop(randoms(300), randoms(300), randoms(300), factories[i], &test_market, &govs));
     }
     for (int i = 0; i <= longs; i++) {
         factories[i] = new Factory(&pops[i], &test_market, &govs);
     }
     for (int i = 0; i <= longs; i++) {
-        pops[i] = Pop(randoms(), randoms(), randoms(), factories[i], &test_market, &govs);
+        pops[i] = Pop(randoms(300), randoms(300), randoms(300), factories[i], &test_market, &govs);
     }
 
     govs=Government(&factories,&pops,0, &test_market);
@@ -55,7 +55,7 @@ int main() {
     int n_cloth=0;
     ofstream myfile;
     myfile.open ("data.csv");
-    while(i<3000){
+    while(i<100){
 
         for (Factory*& entity : factories) {
             entity->Update();

@@ -20,7 +20,6 @@ void Government::Census(){
     }
 }
 void Government::Reset(){
-    cout<<n_tot;
     n_tot=0;
     gdp=0;
 }

@@ -7,7 +7,6 @@
 #include <fstream>
 #include <chrono>
 #include <thread>
-#include <d3d9.h>
 #include "lib/json.hpp"
 #include <string>
 #include "Agents/Factory.h"
@@ -20,42 +19,60 @@ int randoms(int y){
     int v= rand() % y + 1;
     return v;
 };
-
+int ITERATIONS=10000;
 
 
 
 int main() {
+
+    // Iterations and time variables for the simulation to calculate the average time of every loop
+    int n_agents = 20;
+    int ITERATIONS=1000;
+    std::ios::sync_with_stdio(false);
+    using std::chrono::high_resolution_clock;
+    using std::chrono::duration_cast;
+    using std::chrono::duration;
+    using std::chrono::milliseconds;
+
+    // Initialize the json file
+
     std::ifstream f("../Production_methods.json");
     json j = json::parse(f);
-    std::cout << j["Cloth"]["Production_methods"]["PM_1"] << std::endl;
+
+    // Initialize the government, market , population and factories
     Market test_market;
     Government govs;
-    //CREATOR AND ALLOCATOR
-    int longs = 20;
     vector<Factory *> factories;
     vector<Pop> pops;
-    for (int i = 0; i <= longs; i++) {
+
+    // Allocate the population and factories
+
+    for (int i = 0; i <= n_agents; i++) {
         Factory *test_factory;
         factories.push_back(test_factory);
         pops.push_back(Pop(randoms(300), randoms(300), randoms(300), factories[i], &test_market, &govs));
     }
-    for (int i = 0; i <= longs; i++) {
-        factories[i] = new Factory(&pops[i], &test_market, &govs);
+    for (int i = 0; i <= n_agents; i++) {
+        factories[i] = new Factory(&pops[i], &test_market, &govs, j["Food"]);
     }
-    for (int i = 0; i <= longs; i++) {
+    for (int i = 0; i <= n_agents; i++) {
         pops[i] = Pop(randoms(300), randoms(300), randoms(300), factories[i], &test_market, &govs);
     }
 
+    // Initialize the Goverment
+
     govs=Government(&factories,&pops,0, &test_market);
 
+    // Data dump
 
-
-
-    int i=0;
-    int n_cloth=0;
     ofstream myfile;
     myfile.open ("data.csv");
-    while(i<100){
+
+    // main Loop
+
+    int n_cloth=0;
+    for(int i=0; i<ITERATIONS; i++){
+        auto t1 = high_resolution_clock::now();
 
         for (Factory*& entity : factories) {
             entity->Update();
@@ -68,27 +85,33 @@ int main() {
         cout<<endl;
         test_market.Update();
         govs.Update();
-        i++;
+
+        //Console dump
+
         cout<<"    Number of iterations: ";
         cout<<i<<std::endl;
         cout<<"food price: "<<test_market.food_value;
         cout<<"     tot numbers: "<<govs.n_tot;
-        cout<<"     avg numbers: "<<govs.n_tot/longs;
+        cout<<"     avg numbers: "<< govs.n_tot / n_agents;
         cout<<"     food consumed "<<test_market.food_consumed;
-        cout<<"     cloth  "<<n_cloth/govs.n_tot<<endl;
+        cout<<"     cloth  "<<n_cloth/govs.n_tot<<'\n';
         cout<<"     gdp "<<govs.gdp;
         cout<<"     reserve "<<govs.reserve;
-        cout<<"     food produced "<<test_market.food_produced<<std::endl;
+        cout<<"     food produced "<<test_market.food_produced<<'\n';
+
+        //file dump
+
+        myfile << i << ',' << govs.n_tot << ',' << govs.n_tot / n_agents << ',' << test_market.food_consumed << ',' << test_market.food_produced << ',' << test_market.food_value << ',' << govs.gdp << endl;
 
 
 
-        myfile<<i<<','<<govs.n_tot<<','<<govs.n_tot/longs<<','<<test_market.food_consumed<<','<<test_market.food_produced<<','<<test_market.food_value<<','<<govs.gdp<<endl;
-        //this_thread::sleep_for(chrono::milliseconds(100) );
+        auto t2 = high_resolution_clock::now();
+        cout<<"    Time: "<<duration_cast<std::chrono::microseconds>(t2-t1).count()<<" ms"<<std::endl;
+
+
+        govs.Reset();
         test_market.food_consumed=0;
         test_market.food_produced=0;
-        govs.Reset();
-
-
     }
     myfile.close();
     system("pause");

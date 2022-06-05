@@ -15,7 +15,7 @@ public:
     float cash = 1000;
     float salary=1000;
     int production=0;
-    float throughput=0;
+    float Efficiency_parameter=0;
     nlohmann::json j=0;
     Pop* workers;
     Government* gov;
@@ -27,7 +27,7 @@ public:
         markets = insert_good;
         gov=insert_gov;
         j=insert_j;
-        throughput= insert_j["Production_methods"]["PM_1"]["Throughput"];
+        Efficiency_parameter= insert_j["Production_methods"]["PM_1"]["Efficiency_parameter"];
 
     };
     float Troughput();

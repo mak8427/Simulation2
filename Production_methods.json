@@ -2,7 +2,7 @@
   "Food": {
     "Production_methods": {
       "PM_1": {
-        "Throughput": 1,
+        "Efficiency_parameter": 1,
         "Investment_relation": 0.1
       }
      },

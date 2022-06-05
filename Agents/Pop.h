@@ -26,6 +26,7 @@ public:
     float money=50;
     float cloth=10;
     int food=1000;
+    int months_with_food=0;
     Factory* factory;
     Market* markets;
     Government* gov;

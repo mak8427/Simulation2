@@ -16,10 +16,15 @@ void Pop::Food_variation(){
     markets->food_consumed=markets->food_consumed+food_c;
 };
 void  Pop::Pop_variation(){
-    float food_per_capita=float(number)/float(food_consumed());
-    number=number+food/food_per_capita;
+
     if (food<0){
+        float food_per_capita=float(number)/float(food_consumed());
+        number=number+food/food_per_capita;
         food=0;
+
+    }
+    else if(months_with_food>=12){
+        number=number+number/100;
     }
 
 
@@ -27,16 +32,26 @@ void  Pop::Pop_variation(){
 };
 
 void Pop::Money(){
+
+    //salary from work
     float salary=factory->salary *(1-gov->tax_rate);
+
+    //tax payment
     gov->reserve=gov->reserve+gov->tax_rate*factory->salary;
+
+    //real salary
     money=money+salary;
+
+    //if the pop could not afford enough food it uses all of it's money
     if (money<=(food_consumed()+1)*markets->food_value){
         food=food+round(money/markets->food_value);
         money=0;
+        months_with_food=0;
     }
     else{
         food=food+food_consumed()+1;
         money=money-(food_consumed()+1)*markets->food_value;
+        months_with_food=months_with_food+1;
         cloth=cloth+round(money/markets->cloth_value);
     }
 

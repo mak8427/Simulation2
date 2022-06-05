@@ -1,12 +1,10 @@
 #include <iostream>
-#include <stdio.h>      /* printf */
+
 #include <math.h>
 #include <map>
 #include <fstream>
 #include <vector>
-#include <fstream>
 #include <chrono>
-#include <thread>
 #include "lib/json.hpp"
 #include <string>
 #include "Agents/Factory.h"
@@ -19,15 +17,15 @@ int randoms(int y){
     int v= rand() % y + 1;
     return v;
 };
-int ITERATIONS=10000;
 
 
 
 int main() {
 
     // Iterations and time variables for the simulation to calculate the average time of every loop
-    int n_agents = 20;
+    int n_agents = 1;
     int ITERATIONS=1000;
+    int STAT=100;
     std::ios::sync_with_stdio(false);
     using std::chrono::high_resolution_clock;
     using std::chrono::duration_cast;
@@ -50,13 +48,13 @@ int main() {
     for (int i = 0; i <= n_agents; i++) {
         Factory *test_factory;
         factories.push_back(test_factory);
-        pops.push_back(Pop(randoms(300), randoms(300), randoms(300), factories[i], &test_market, &govs));
+        pops.push_back(Pop(randoms(STAT), randoms(STAT), randoms(STAT), factories[i], &test_market, &govs));
     }
     for (int i = 0; i <= n_agents; i++) {
         factories[i] = new Factory(&pops[i], &test_market, &govs, j["Food"]);
     }
     for (int i = 0; i <= n_agents; i++) {
-        pops[i] = Pop(randoms(300), randoms(300), randoms(300), factories[i], &test_market, &govs);
+        pops[i] = Pop(randoms(STAT), randoms(STAT), randoms(STAT), factories[i], &test_market, &govs);
     }
 
     // Initialize the Goverment
@@ -104,14 +102,17 @@ int main() {
         myfile << i << ',' << govs.n_tot << ',' << govs.n_tot / n_agents << ',' << test_market.food_consumed << ',' << test_market.food_produced << ',' << test_market.food_value << ',' << govs.gdp << endl;
 
 
-
-        auto t2 = high_resolution_clock::now();
-        cout<<"    Time: "<<duration_cast<std::chrono::microseconds>(t2-t1).count()<<" ms"<<std::endl;
-
+        //Reset of variables
 
         govs.Reset();
         test_market.food_consumed=0;
         test_market.food_produced=0;
+
+        //time taken for each loop
+
+        auto t2 = high_resolution_clock::now();
+        cout<<"    Time: "<<duration_cast<std::chrono::microseconds>(t2-t1).count()<<" microseconds"<<std::endl;
+
     }
     myfile.close();
     system("pause");

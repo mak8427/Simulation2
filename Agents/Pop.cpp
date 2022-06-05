@@ -24,7 +24,7 @@ void  Pop::Pop_variation(){
 
     }
     else if(months_with_food>=12){
-        number=number+number/100;
+        number=number+number/10;
     }
 
 

@@ -11,11 +11,14 @@ class Government;
 class Market;
 class Factory {
 public:
-    float investment=0;
+    float investment=1;
     float cash = 1000;
+    float sigma=0;
+    float sigma_sostitution=0;
     float salary=1000;
     int production=0;
     float Efficiency_parameter=0;
+    float distribution_parameter=0;
     nlohmann::json j=0;
     Pop* workers;
     Government* gov;
@@ -28,6 +31,10 @@ public:
         gov=insert_gov;
         j=insert_j;
         Efficiency_parameter= insert_j["Production_methods"]["PM_1"]["Efficiency_parameter"];
+        sigma=insert_j["Production_methods"]["PM_1"]["Sigma"];
+        distribution_parameter=insert_j["Production_methods"]["PM_1"]["distribution_parameter"];
+        sigma_sostitution=(sigma-1)/sigma;
+
 
     };
     float Troughput();

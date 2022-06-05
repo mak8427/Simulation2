@@ -3,7 +3,9 @@
     "Production_methods": {
       "PM_1": {
         "Efficiency_parameter": 1,
-        "Investment_relation": 0.1
+        "Sigma": 0.8,
+        "Investment_relation": 0.1,
+        "distribution_parameter": 0.3
       }
      },
     "Ownership_type": {

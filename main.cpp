@@ -23,9 +23,10 @@ int randoms(int y){
 int main() {
 
     // Iterations and time variables for the simulation to calculate the average time of every loop
-    int n_agents = 1;
-    int ITERATIONS=1000;
+    int n_agents = 1000;
+    int ITERATIONS=10000;
     int STAT=100;
+    float TAX_RATE=0;
     std::ios::sync_with_stdio(false);
     using std::chrono::high_resolution_clock;
     using std::chrono::duration_cast;
@@ -59,7 +60,7 @@ int main() {
 
     // Initialize the Goverment
 
-    govs=Government(&factories,&pops,0, &test_market);
+    govs=Government(&factories,&pops,TAX_RATE, &test_market);
 
     // Data dump
 

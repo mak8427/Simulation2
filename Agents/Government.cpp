@@ -10,7 +10,9 @@
 #include <random>
 #include <iostream>
 #include <stdio.h>
+
 using namespace std;
+
 void Government::Census(){
     for (auto & i : *pop_) {
         n_tot=n_tot+i.number;

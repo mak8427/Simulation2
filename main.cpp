@@ -23,7 +23,7 @@ int randoms(int y){
 int main() {
 
     // Iterations and time variables for the simulation to calculate the average time of every loop
-    int n_agents = 1000;
+    int n_agents = 50;
     int ITERATIONS=10000;
     int STAT=100;
     float TAX_RATE=0;
@@ -34,7 +34,6 @@ int main() {
     using std::chrono::milliseconds;
 
     // Initialize the json file
-
     std::ifstream f("../Production_methods.json");
     json j = json::parse(f);
 
@@ -45,7 +44,6 @@ int main() {
     vector<Pop> pops;
 
     // Allocate the population and factories
-
     for (int i = 0; i <= n_agents; i++) {
         Factory *test_factory;
         factories.push_back(test_factory);
@@ -59,16 +57,13 @@ int main() {
     }
 
     // Initialize the Goverment
-
     govs=Government(&factories,&pops,TAX_RATE, &test_market);
 
     // Data dump
-
     ofstream myfile;
     myfile.open ("data.csv");
 
     // main Loop
-
     int n_cloth=0;
     for(int i=0; i<ITERATIONS; i++){
         auto t1 = high_resolution_clock::now();
@@ -86,7 +81,6 @@ int main() {
         govs.Update();
 
         //Console dump
-
         cout<<"    Number of iterations: ";
         cout<<i<<std::endl;
         cout<<"food price: "<<test_market.food_value;
@@ -99,18 +93,15 @@ int main() {
         cout<<"     food produced "<<test_market.food_produced<<'\n';
 
         //file dump
-
         myfile << i << ',' << govs.n_tot << ',' << govs.n_tot / n_agents << ',' << test_market.food_consumed << ',' << test_market.food_produced << ',' << test_market.food_value << ',' << govs.gdp << endl;
 
 
         //Reset of variables
-
         govs.Reset();
         test_market.food_consumed=0;
         test_market.food_produced=0;
 
         //time taken for each loop
-
         auto t2 = high_resolution_clock::now();
         cout<<"    Time: "<<duration_cast<std::chrono::microseconds>(t2-t1).count()<<" microseconds"<<std::endl;
 

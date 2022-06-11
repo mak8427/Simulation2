@@ -14,6 +14,7 @@ class Government {
 public:
     float reserve=0;
     float tax_rate=0;
+    int n_food=0;
     float gdp=0;
     int n_tot=0;
     Market* market;

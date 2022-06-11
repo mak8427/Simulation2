@@ -19,7 +19,7 @@ void  Pop::Pop_variation(){
 
     if (food<0){
         float food_per_capita=float(number)/float(food_consumed());
-        number=number+food/food_per_capita;
+        number=number-1+food/food_per_capita;
         food=0;
 
     }
@@ -43,16 +43,17 @@ void Pop::Money(){
     money=money+salary;
 
     //if the pop could not afford enough food it uses all of it's money
-    if (money<=(food_consumed()+1)*markets->food_value){
-        food=food+round(money/markets->food_value);
-        money=0;
-        months_with_food=0;
-    }
-    else{
-        food=food+food_consumed()+1;
-        money=money-(food_consumed()+1)*markets->food_value;
-        months_with_food=months_with_food+1;
-        cloth=cloth+round(money/markets->cloth_value);
+    if  (food < food_consumed()*reserve_constant) {
+        if (money <= (food_consumed() + 1) * markets->food_value) {
+            food = food + round(money / markets->food_value);
+            money = 0;
+            months_with_food = 0;
+        } else {
+            food = food + food_consumed() + 1;
+            money = money - (food_consumed() + 1) * markets->food_value;
+            months_with_food = months_with_food + 1;
+            cloth = cloth + round(money / markets->cloth_value);
+        }
     }
 
     

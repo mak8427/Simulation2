@@ -20,8 +20,12 @@ void Government::Census(){
     for (auto & i : *fact_) {
         gdp=gdp+i->production * market->food_value;
     }
+    for (auto & i : *pop_) {
+        n_food=n_food+i.food;
+    }
 }
 void Government::Reset(){
     n_tot=0;
     gdp=0;
+    n_food=0;
 }

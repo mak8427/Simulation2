@@ -9,7 +9,7 @@
 // Created by Mac on 15/04/22.
 //
 
-
+#include "../lib/json.hpp"
 #include <iostream>
 #include <stdio.h>      /* printf */
 #include <math.h>
@@ -24,9 +24,11 @@ class Pop {
 public:
     int number=100;
     float money=50;
-    float cloth=10;
+    int cloth=0;
     int food=1000;
     int months_with_food=0;
+    nlohmann::json j=0;
+    float reserve_constant=0;
     Factory* factory;
     Market* markets;
     Government* gov;
@@ -41,13 +43,15 @@ public:
 
     };
     Pop(){};
-    Pop(int insert_number, int insert_money ,int insert_food, Factory* insert_factory,Market* insert_Market,Government* insert_gov){
+    Pop(int insert_number, int insert_money ,int insert_food, Factory* insert_factory,Market* insert_Market,Government* insert_gov,nlohmann::json insert_j){
         number=insert_number;
         money=insert_money;
         food=insert_food;
         factory = insert_factory;
         markets=insert_Market;
         gov=insert_gov;
+        j=insert_j;
+        reserve_constant=j["reserve_constant"];
     }
 
 };

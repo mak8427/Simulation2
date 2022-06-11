@@ -24,7 +24,7 @@ int main() {
 
     // Iterations and time variables for the simulation to calculate the average time of every loop
     int n_agents = 50;
-    int ITERATIONS=10000;
+    int ITERATIONS=100;
     int STAT=100;
     float TAX_RATE=0;
     std::ios::sync_with_stdio(false);
@@ -35,6 +35,8 @@ int main() {
 
     // Initialize the json file
     std::ifstream f("../Production_methods.json");
+    std::ifstream s("../Pop.json");
+    json q = json::parse(s);
     json j = json::parse(f);
 
     // Initialize the government, market , population and factories
@@ -47,13 +49,13 @@ int main() {
     for (int i = 0; i <= n_agents; i++) {
         Factory *test_factory;
         factories.push_back(test_factory);
-        pops.push_back(Pop(randoms(STAT), randoms(STAT), randoms(STAT), factories[i], &test_market, &govs));
+        pops.push_back(Pop(randoms(STAT), randoms(STAT), randoms(STAT), factories[i], &test_market, &govs, q["Pop"]));
     }
     for (int i = 0; i <= n_agents; i++) {
         factories[i] = new Factory(&pops[i], &test_market, &govs, j["Food"]);
     }
     for (int i = 0; i <= n_agents; i++) {
-        pops[i] = Pop(randoms(STAT), randoms(STAT), randoms(STAT), factories[i], &test_market, &govs);
+        pops[i] = Pop(randoms(STAT), randoms(STAT), randoms(STAT), factories[i], &test_market, &govs, q["Pop"]);
     }
 
     // Initialize the Goverment
@@ -90,6 +92,7 @@ int main() {
         cout<<"     cloth  "<<n_cloth/govs.n_tot<<'\n';
         cout<<"     gdp "<<govs.gdp;
         cout<<"     reserve "<<govs.reserve;
+        cout<<"     food reserve "<<govs.n_food;
         cout<<"     food produced "<<test_market.food_produced<<'\n';
 
         //file dump

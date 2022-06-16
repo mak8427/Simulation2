@@ -18,7 +18,7 @@ void Pop::Food_variation(){
 void  Pop::Pop_variation(){
 
     if (food<0){
-        float food_per_capita=float(number)/float(food_consumed());
+        float food_per_capita=float(food_consumed())/float(number);
         number=number-1+food/food_per_capita;
         food=0;
 

@@ -26,6 +26,7 @@ public:
     float money=50;
     int cloth=0;
     int food=1000;
+    float reproduction_rate;
     int months_with_food=0;
     nlohmann::json j=0;
     float reserve_constant=0;
@@ -52,6 +53,10 @@ public:
         gov=insert_gov;
         j=insert_j;
         reserve_constant=j["reserve_constant"];
+        reproduction_rate=j["reproduction_rate"];
+
+
+
     }
 
 };

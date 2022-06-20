@@ -31,9 +31,9 @@ int main() {
 
 
     // Initialize  json files
-    std::ifstream production_methods("Production_methods.json");
-    std::ifstream Pop_("Pop.json");
-    std::ifstream Defines("Defines.json");
+    std::ifstream production_methods("../Production_methods.json");
+    std::ifstream Pop_("../Pop.json");
+    std::ifstream Defines("../Defines.json");
     json Pop_j = json::parse(Pop_);
     json production_methods_j = json::parse(production_methods);
     json Defines_j = json::parse(Defines);
@@ -57,6 +57,7 @@ int main() {
         pops.push_back(Pop(randoms(STAT), randoms(STAT), randoms(STAT), factories[i], &test_market, &govs, Pop_j["Pop"]));
     }
     for (int i = 0; i <= n_agents; i++) {
+
         factories[i] = new Factory(&pops[i], &test_market, &govs, production_methods_j["Food"]);
     }
     for (int i = 0; i <= n_agents; i++) {
@@ -90,24 +91,24 @@ int main() {
         //Console dump
         cout<<"    Number of iterations: ";
         cout<<i<<std::endl;
-        cout<<"food price: "<<test_market.food_value;
+        cout<<"food price: "<<test_market.Stats["food_value"];
         cout<<"     tot numbers: "<<govs.n_tot;
         cout<<"     avg numbers: "<< govs.n_tot / n_agents;
-        cout<<"     food consumed "<<test_market.food_consumed;
+        cout<<"     food consumed "<<test_market.Stats["food_consumed"];
         cout<<"     cloth  "<<n_cloth/govs.n_tot<<'\n';
         cout<<"     gdp "<<govs.gdp;
         cout<<"     reserve "<<govs.reserve;
         cout<<"     food reserve "<<govs.n_food;
-        cout<<"     food produced "<<test_market.food_produced<<'\n';
+        cout<<"     food produced "<<test_market.Stats["food_produced"]<<'\n';
 
         //file dump
-        myfile << i << ',' << govs.n_tot << ',' << govs.n_tot / n_agents << ',' << test_market.food_consumed << ',' << test_market.food_produced << ',' << test_market.food_value << ',' << govs.gdp << endl;
+        myfile << i << ',' << govs.n_tot << ',' << govs.n_tot / n_agents << ',' << test_market.Stats["food_consumed"] << ',' << test_market.Stats["food_produced"] << ',' << test_market.Stats["food_value"] << ',' << govs.gdp << endl;
 
 
         //Reset of variables
         govs.Reset();
-        test_market.food_consumed=0;
-        test_market.food_produced=0;
+        test_market.Stats["food_consumed"]=0;
+        test_market.Stats["food_produced"]=0;
 
         //time taken for each loop
         auto t2 = high_resolution_clock::now();

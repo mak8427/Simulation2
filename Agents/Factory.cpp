@@ -17,8 +17,8 @@ float Factory::Troughput(){
 void Factory::Production(){
 
     production= Efficiency_parameter* pow((distribution_parameter*pow(investment,sigma_sostitution)+(1-distribution_parameter)*pow(workers->number,sigma_sostitution)),1/sigma_sostitution);
-    float money_gained=production*(markets->food_value);
-    markets->food_produced=markets->food_produced+production;
+    float money_gained=production*(markets->Stats["food_value"]);
+    markets->Stats["food_produced"]=markets->Stats["food_produced"]+production;
     cash=cash+money_gained;
 };
 void Factory::Salary(){

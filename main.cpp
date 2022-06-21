@@ -1,5 +1,5 @@
 #include <iostream>
-
+#include <random>
 #include <math.h>
 #include <map>
 #include <fstream>
@@ -28,6 +28,11 @@ int main() {
     using std::chrono::duration_cast;
     using std::chrono::duration;
     using std::chrono::milliseconds;
+
+    //random
+    std::random_device rd; // obtain a random number from hardware
+    std::mt19937 gen(rd()); // seed the generator
+    std::uniform_int_distribution<> distr(0, 1); // define the range
 
 
     // Initialize  json files
@@ -58,7 +63,7 @@ int main() {
     }
     for (int i = 0; i <= n_agents; i++) {
 
-        factories[i] = new Factory(&pops[i], &test_market, &govs, production_methods_j["Food"]);
+        factories[i] = new Factory(&pops[i], &test_market, &govs, production_methods_j, distr(gen));
     }
     for (int i = 0; i <= n_agents; i++) {
         pops[i] = Pop(randoms(STAT), randoms(STAT), randoms(STAT), factories[i], &test_market, &govs, Pop_j["Pop"]);
@@ -91,24 +96,29 @@ int main() {
         //Console dump
         cout<<"    Number of iterations: ";
         cout<<i<<std::endl;
-        cout<<"food price: "<<test_market.Stats["food_value"];
+        cout<<"food price: "<<test_market.Stats["Food_value"];
         cout<<"     tot numbers: "<<govs.n_tot;
         cout<<"     avg numbers: "<< govs.n_tot / n_agents;
-        cout<<"     food consumed "<<test_market.Stats["food_consumed"];
+        cout<<"     food consumed "<<test_market.Stats["Food_consumed"];
         cout<<"     cloth  "<<n_cloth/govs.n_tot<<'\n';
         cout<<"     gdp "<<govs.gdp;
         cout<<"     reserve "<<govs.reserve;
         cout<<"     food reserve "<<govs.n_food;
-        cout<<"     food produced "<<test_market.Stats["food_produced"]<<'\n';
+        cout<<"     food produced "<<test_market.Stats["Food_produced"]<<'\n';
+        cout<<"     Cloth produced "<<test_market.Stats["Cloth_produced"];
+        cout<<"     Cloth consumed "<<test_market.Stats["Cloth_consumed"];
+        cout<<"Cloth price: "<<test_market.Stats["Cloth_value"];
 
         //file dump
-        myfile << i << ',' << govs.n_tot << ',' << govs.n_tot / n_agents << ',' << test_market.Stats["food_consumed"] << ',' << test_market.Stats["food_produced"] << ',' << test_market.Stats["food_value"] << ',' << govs.gdp << endl;
+        myfile << i << ',' << govs.n_tot << ',' << govs.n_tot / n_agents << ',' << test_market.Stats["Food_consumed"] << ',' << test_market.Stats["Food_produced"] << ',' << test_market.Stats["Food_value"] << ',' << govs.gdp << endl;
 
 
         //Reset of variables
         govs.Reset();
-        test_market.Stats["food_consumed"]=0;
-        test_market.Stats["food_produced"]=0;
+        test_market.Stats["Food_consumed"]=0;
+        test_market.Stats["Food_produced"]=0;
+        test_market.Stats["Cloth_consumed"]=0;
+        test_market.Stats["Cloth_produced"]=0;
 
         //time taken for each loop
         auto t2 = high_resolution_clock::now();

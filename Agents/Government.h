@@ -5,6 +5,8 @@
 #ifndef TEST1_GOVERNMENT_H
 #define TEST1_GOVERNMENT_H
 #include <vector>
+#include <string>
+
 class Pop;
 class Factory;
 class Market;

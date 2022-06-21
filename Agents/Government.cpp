@@ -16,12 +16,11 @@ using namespace std;
 void Government::Census(){
     for (auto & i : *pop_) {
         n_tot=n_tot+i.number;
+        n_food=n_food+i.food;
+
     }
     for (auto & i : *fact_) {
-        gdp=gdp+i->production * market->Stats["food_value"];
-    }
-    for (auto & i : *pop_) {
-        n_food=n_food+i.food;
+        gdp=gdp+i->production * market->Stats["Food_value"];
     }
 }
 void Government::Reset(){

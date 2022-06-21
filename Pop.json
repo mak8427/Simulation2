@@ -1,6 +1,6 @@
 {
   "Pop":{
-    "reserve_constant": 2.1,
+    "reserve_constant": 1,
     "test": 0.1,
     "reproduction_rate": 0.2
   }

@@ -8,16 +8,17 @@
 #include <stdio.h>
 using namespace std;
 void Market::Food_value_change(){
-    if (Stats["food_produced"]<Stats["food_consumed"]) {
-        float rect=float(Stats["food_consumed"])/float(Stats["food_produced"])-1;
-       Stats["food_value"]=Stats["food_value"]+rect*log(Stats["food_value"]);
-    }
-    else{
-        float rect=(1-1/(float(Stats["food_produced"])/float(Stats["food_consumed"])))/5;
-        Stats["food_value"]=Stats["food_value"]*(1-rect);
+    for (auto & good : Goods){
+         if (Stats[good+"_produced"]<Stats[good+"_consumed"]) {
+             float rect=float(Stats[good+"_consumed"])/float(Stats[good+"_produced"])-1;
+            Stats[good+"_value"]=Stats[good+"_value"]+rect*log(Stats[good+"_value"]);
+         }
+         else{
+             float rect=(1-1/(float(Stats[good+"_produced"])/float(Stats[good+"_consumed"])))/5;
+             Stats[good+"_value"]=Stats[good+"_value"]*(1-rect);
 
+         }
     }
-
 
 
 }

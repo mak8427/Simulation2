@@ -7,19 +7,21 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <vector>
 
 using std::string;
 using std::map;
 
-
 class Market {
 public:
-
+    std::vector<string> Goods {"Food", "Cloth"};
     map<string, float> Stats = { // This equals sign is optional
-            {"food_value", 10},
-            {"food_produced", 0},
-            {"food_consumed", 0},
-            {"cloth_value", 5},
+            {"Food_value", 100},
+            {"Food_produced", 0},
+            {"Food_consumed", 0},
+            {"Cloth_value", 100},
+            {"Cloth_produced", 0},
+            {"Cloth_consumed", 0},
     };
     void  Food_value_change();
     void Update(){

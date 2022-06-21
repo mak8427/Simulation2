@@ -8,12 +8,19 @@
 #include <string>
 #include <map>
 #include <vector>
+#include "Factory.h"
+#include "Pop.h"
+
+
+
 
 using std::string;
 using std::map;
+class Pop ;
 
 class Market {
 public:
+    std::vector<Pop>* Pops;
     std::vector<string> Goods {"Food", "Cloth"};
     map<string, float> Stats = { // This equals sign is optional
             {"Food_value", 100},
@@ -23,10 +30,17 @@ public:
             {"Cloth_produced", 0},
             {"Cloth_consumed", 0},
     };
+    Market(std::vector<Pop>* insert_pop){
+        Pops=insert_pop;
+    }
+
+
+
+    void Sender();
     void  Food_value_change();
     void Update(){
         Market::Food_value_change();
-
+        Market::Sender();
 
     }
 

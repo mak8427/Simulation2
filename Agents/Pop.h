@@ -37,6 +37,7 @@ public:
     void  Pop_variation();
     void  Money();
     float food_consumed();
+    void SOL();
     void Update(){
         Pop::Food_variation();
         Pop::Money();

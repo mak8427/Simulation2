@@ -30,6 +30,28 @@ void  Pop::Pop_variation(){
 
 
 };
+void Pop::SOL(){
+    if  (food < food_consumed()*reserve_constant) {
+        if (money <= (food_consumed() + 1) * markets->Stats["Food_value"]) {
+            food = food + round(money / markets->Stats["Food_value"]);
+            money = 0;
+            months_with_food = 0;
+        } else {
+            food = food + food_consumed() + 1;
+            money = money - (food_consumed() + 1) * markets->Stats["Food_value"];
+            months_with_food = months_with_food + 1;
+            cloth = cloth + round(money / markets->Stats["Cloth_value"]);
+        }
+    }
+
+
+}
+
+
+
+
+
+
 
 void Pop::Money(){
 
@@ -55,8 +77,6 @@ void Pop::Money(){
             cloth = cloth + round(money / markets->Stats["Cloth_value"]);
         }
     }
-    markets->Stats["Cloth_consumed"]=markets->Stats["Cloth_consumed"]+number;
+    markets->Stats["Cloth_consumed"]=markets->Stats["Cloth_consumed"]+1;
 
-
-    
 }

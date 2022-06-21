@@ -50,10 +50,10 @@ int main() {
     float TAX_RATE=Defines_j["TAX_RATE"];
 
     // Initialize the government, market , population and factories
-    Market test_market;
     Government govs;
     vector<Factory *> factories;
     vector<Pop> pops;
+    Market test_market(&pops);
 
     // Allocate the population and factories
     for (int i = 0; i <= n_agents; i++) {

@@ -1,7 +1,7 @@
 {
   "STAT": 100,
   "ITERATIONS": 20,
-  "n_agents": 50,
+  "n_agents": 20,
   "TAX_RATE": 0.0
 
 

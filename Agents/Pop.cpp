@@ -77,6 +77,6 @@ void Pop::Money(){
             cloth = cloth + round(money / markets->Stats["Cloth_value"]);
         }
     }
-    markets->Stats["Cloth_consumed"]=markets->Stats["Cloth_consumed"]+1;
+    markets->Stats["Cloth_consumed"]=markets->Stats["Cloth_consumed"]+4;
 
 }

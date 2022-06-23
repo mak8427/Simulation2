@@ -40,19 +40,19 @@ void PrintVector(vector<float> v){
     cout<<"\n\n";
 }
 
-bool cmp(pair<Pop, float>& a,
-         pair<Pop, float>& b)
+bool cmp(pair<int, float>& a,
+         pair<int, float>& b)
 {
     return a.second < b.second;
 }
 
 
 
-void Sort(map<Pop, float>& M)
+void Sort(map<int, float>& M)
 {
 
     // Declare vector of pairs
-    vector<pair<Pop, float> > A;
+    vector<pair<int, float> > A;
 
     // Copy key-value pair from Map
     // to vector of pairs
@@ -62,5 +62,18 @@ void Sort(map<Pop, float>& M)
 
     // Sort using comparator function
     sort(A.begin(), A.end(), cmp);
+
+    for (auto& it : A) {
+
+        cout << it.first << ' '
+             << it.second << endl;
+    }
+
+}
+
+//function that sorts a coulmn of a matrix in descending order
+void SortMatrix(float m[][2] , int columnm, int i){
+    std::cout << m[i][0]<<" "<< m[i][1]<<" "<<m[i][2]<<'\n';
+
 
 }

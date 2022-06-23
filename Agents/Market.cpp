@@ -25,16 +25,20 @@ void Market::Food_value_change(){
 
          }
     }
+}
+void Market::Sender() {
+    float Price_per_good[Pops->size()][2];
+    int i=0;
+    for(auto &pop_z : *Pops)
+    {
+        Price_per_good[i][0] = i;
+        Price_per_good[i][1] = pop_z.money / pop_z.food_consumed();
+        Price_per_good[i][2] = pop_z.food_consumed();
+        i++;
+    }
 
+    SortMatrix(Price_per_good,2, 8);
 
 }
-void Market::Sender(){
-    std::map<Pop,float> Price_per_good;
-    for (auto &pop_ : *Pops ){
-        Price_per_good[pop_]=pop_.money/pop_.food_consumed();
-    };
-    Sort(Price_per_good);
 
 
-
-}

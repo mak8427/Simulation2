@@ -46,6 +46,12 @@ bool cmp(pair<int, float>& a,
     return a.second < b.second;
 }
 
+auto Array1(float logic[][3], int q, float j[3]){
+    for (int i = 0; i < 3; i++) {
+        j[i] = logic[q][i];
+    }
+    //cout<<j[0]<<" "<<j[1]<<" "<<j[2]<<"\n";
+}
 
 
 void Sort(map<int, float>& M)
@@ -72,8 +78,26 @@ void Sort(map<int, float>& M)
 }
 
 //function that sorts a coulmn of a matrix in descending order
-void SortMatrix(float m[][2] , int columnm, int i){
-    std::cout << m[i][0]<<" "<< m[i][1]<<" "<<m[i][2]<<'\n';
+void SortMatrix(float m[][3] , int columnm){
+    float f[3];
+    float x[3];
+    int index=0;
+    for (int l=0; l<sizeof(m);l++) {
+        Array1(m, l, f);
+        for (int i = l; i < sizeof(m); i++) {
+            Array1(m, i + 1, x);
+            if (x[columnm] > f[columnm]) {
+                index= i+1;
+            }
+        }
+        for (int j = 0; j < 3; j++) {
+            swap(m[l][j], m[index][j]);
+        }
+        index=l;
+    }
+    for( int x=0; x<sizeof(m)+1; x++) {
+        std::cout << m[x][0] << "  " << m[x][1] << "  " << m[x][2]<<'\n';
+    }
 
 
 }

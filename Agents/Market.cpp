@@ -27,7 +27,7 @@ void Market::Food_value_change(){
     }
 }
 void Market::Sender() {
-    float Price_per_good[Pops->size()][2];
+    float Price_per_good[Pops->size()][3];
     int i=0;
     for(auto &pop_z : *Pops)
     {
@@ -37,7 +37,7 @@ void Market::Sender() {
         i++;
     }
 
-    SortMatrix(Price_per_good,2, 8);
+    SortMatrix(Price_per_good,1);
 
 }
 

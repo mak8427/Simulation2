@@ -78,26 +78,37 @@ void Sort(map<int, float>& M)
 }
 
 //function that sorts a coulmn of a matrix in descending order
-void SortMatrix(float m[][3] , int columnm){
+void SortMatrix(float m[][3] , int column,int length, bool test ){
     float f[3];
     float x[3];
     int index=0;
-    for (int l=0; l<sizeof(m);l++) {
-        Array1(m, l, f);
-        for (int i = l; i < sizeof(m); i++) {
-            Array1(m, i + 1, x);
-            if (x[columnm] > f[columnm]) {
-                index= i+1;
+    for (int l=0; l<length;l++) {
+        Array1(m,l,f);
+        for(int i=l;i<length;i++){
+            Array1(m,i,x);
+            if(f[column]<x[column]){
+                index=i;
+                Array1(m,i,f);
             }
         }
-        for (int j = 0; j < 3; j++) {
-            swap(m[l][j], m[index][j]);
+        for(int g=0; g<3; g++){
+            swap(m[l][g],m[index][g]);
         }
-        index=l;
-    }
-    for( int x=0; x<sizeof(m)+1; x++) {
-        std::cout << m[x][0] << "  " << m[x][1] << "  " << m[x][2]<<'\n';
+
     }
 
+
+
+    if(test) {
+        for (int x = 0; x < length; x++) {
+            std::cout << m[x][0] << "  " << m[x][1] << "  " << m[x][2] << '\n';
+        }
+    }
 
 }
+
+
+
+
+
+

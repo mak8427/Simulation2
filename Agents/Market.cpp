@@ -36,8 +36,8 @@ void Market::Sender() {
         Price_per_good[i][2] = pop_z.food_consumed();
         i++;
     }
-
-    SortMatrix(Price_per_good,1);
+    //SortMatrix(Price_per_good,0,Pops->size(), false);
+    SortMatrix(Price_per_good,1,Pops->size(), true);
 
 }
 

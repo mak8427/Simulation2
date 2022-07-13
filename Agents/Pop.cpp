@@ -64,7 +64,7 @@ void Pop::Money(){
     //real salary
     money=money+salary;
 
-    //if the pop could not afford enough food it uses all of it's money
+    /*if the pop could not afford enough food it uses all of it's money
     if  (food < food_consumed()*reserve_constant) {
         if (money <= (food_consumed() + 1) * markets->Stats["Food_value"]) {
             food = food + round(money / markets->Stats["Food_value"]);
@@ -77,6 +77,7 @@ void Pop::Money(){
             cloth = cloth + round(money / markets->Stats["Cloth_value"]);
         }
     }
+     */
     markets->Stats["Cloth_consumed"]=markets->Stats["Cloth_consumed"]+4;
 
 }

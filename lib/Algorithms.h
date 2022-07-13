@@ -107,6 +107,32 @@ void SortMatrix(float m[][3] , int column,int length, bool test ){
 
 }
 
+auto Sort_Vector(vector<vector<float>> m , int column,int length, bool test ){
+    vector<float> f;
+    vector<float> x;
+
+    for(int l=0; l<length;l++){
+        f=m[l];
+        for(int i=l;i<length;i++){
+            x=m[i];
+            if(f[column]<x[column]){
+                m[i]=f;
+                f=x;
+            }
+        }
+        m[l]=f;
+    }
+
+
+    if(test) {
+        for (int x = 0; x < length; x++) {
+            std::cout << m[x][0] << "  " << m[x][1] << "  " << m[x][2] << '\n';
+        }
+    }
+
+    return m;
+}
+
 
 
 

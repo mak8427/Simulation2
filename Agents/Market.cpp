@@ -29,15 +29,35 @@ void Market::Food_value_change(){
 void Market::Sender() {
     float Price_per_good[Pops->size()][3];
     int i=0;
-    for(auto &pop_z : *Pops)
-    {
-        Price_per_good[i][0] = i;
-        Price_per_good[i][1] = pop_z.money / pop_z.food_consumed();
-        Price_per_good[i][2] = pop_z.food_consumed();
+
+    i=0;
+    vector<vector<float>> Price_for_goods;
+    for(auto  &pop_z: *Pops){
+        Price_for_goods.push_back({float(i),pop_z.money / pop_z.food_consumed(),pop_z.food_consumed()});
         i++;
     }
-    //SortMatrix(Price_per_good,0,Pops->size(), false);
-    SortMatrix(Price_per_good,1,Pops->size(), true);
+    Price_for_goods = Sort_Vector(Price_for_goods,1,Price_for_goods.size(),false);
+
+    for (int x = 0; x < Price_for_goods.size(); x++) {
+        std::cout << Price_for_goods[x][0] << "  " << Price_for_goods[x][1] << "  " << Price_for_goods[x][2] << '\n';
+    }
+    int foods =Stats["Food_produced"];
+    float price;
+    for(int i =0; i<Price_for_goods.size();i++){
+        if (foods-Price_for_goods[i][2]>=0){
+            foods-=Price_for_goods[i][2];
+            Stats["Food_consumed"]+=Price_for_goods[i][2];
+            price=Price_for_goods[i][1];
+        }
+    }
+    for(int l; l<i;l++){
+        Pops->at(l).money-=price*Pops->at(l).food_consumed();
+
+    }
+    cout<<price;
+
+
+
 
 }
 

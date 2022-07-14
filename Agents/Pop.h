@@ -42,6 +42,8 @@ public:
         Pop::Food_variation();
         Pop::Money();
         Pop::Pop_variation();
+        Pop::SOL();
+
 
     };
     Pop(){};

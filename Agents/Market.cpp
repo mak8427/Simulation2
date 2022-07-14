@@ -48,13 +48,14 @@ void Market::Sender() {
             foods-=Price_for_goods[i][2];
             Stats["Food_consumed"]+=Price_for_goods[i][2];
             price=Price_for_goods[i][1];
+
+            Pops->at(Price_for_goods[i][0]).money-=price*Pops->at(Price_for_goods[i][0]).food_consumed();
+            Pops->at(Price_for_goods[i][0]).food += Pops->at(Price_for_goods[i][0]).food_consumed();
+
         }
     }
-    for(int l; l<i;l++){
-        Pops->at(l).money-=price*Pops->at(l).food_consumed();
-
-    }
-    cout<<price;
+    Stats["Food_value"]=price;
+    cout<<"price: "<<price<<endl;
 
 
 

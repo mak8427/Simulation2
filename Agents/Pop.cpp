@@ -19,18 +19,31 @@ void  Pop::Pop_variation(){
 
     if (food<0){
         float food_per_capita=float(food_consumed())/float(number);
-        number=number-1+food/food_per_capita;
+        number=number+food/food_per_capita;
         food=0;
+        if (number<=0){
+            number=1;
+        }
 
     }
     else if(months_with_food>=12){
-        number=number+number*reproduction_rate;
+        number=number+1+number*reproduction_rate;
     }
 
 
 
 };
 void Pop::SOL(){
+    if(food<30){
+        months_with_food = months_with_food + 1;
+    }
+    else {
+        months_with_food=0;
+        food=0;
+    }
+
+
+    /*
     if  (food < food_consumed()*reserve_constant) {
         if (money <= (food_consumed() + 1) * markets->Stats["Food_value"]) {
             food = food + round(money / markets->Stats["Food_value"]);
@@ -44,7 +57,7 @@ void Pop::SOL(){
         }
     }
 
-
+    */
 }
 
 

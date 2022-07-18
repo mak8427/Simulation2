@@ -99,7 +99,7 @@ int main() {
         cout<<"food price: "<<test_market.Stats["Food_value"];
         cout<<"     tot numbers: "<<govs.n_tot;
         cout<<"     avg numbers: "<< govs.n_tot / n_agents;
-        cout<<"     food consumed "<<test_market.Stats["Food_consumed"];
+        cout<<"     food needed "<<test_market.Stats["Food_consumed"];
         cout<<"     cloth  "<<n_cloth/govs.n_tot<<'\n';
         cout<<"     gdp "<<govs.gdp;
         cout<<"     reserve "<<govs.reserve;

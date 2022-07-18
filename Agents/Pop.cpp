@@ -11,9 +11,8 @@ float Pop::food_consumed(){
     return f;
 }
 void Pop::Food_variation(){
-    int food_c=food_consumed();
-    food=food-food_c;
-    markets->Stats["Food_consumed"]=markets->Stats["Food_consumed"]+food_c;
+    markets->Stats["Food_consumed"]=markets->Stats["Food_consumed"]+food_consumed();
+    food=food-food_consumed();
 };
 void  Pop::Pop_variation(){
 
@@ -34,7 +33,7 @@ void  Pop::Pop_variation(){
 
 };
 void Pop::SOL(){
-    if(food<30){
+    if(food>-30){
         months_with_food = months_with_food + 1;
     }
     else {
@@ -91,6 +90,6 @@ void Pop::Money(){
         }
     }
      */
-    markets->Stats["Cloth_consumed"]=markets->Stats["Cloth_consumed"]+4;
+    //markets->Stats["Cloth_consumed"]=markets->Stats["Cloth_consumed"]+4;
 
 }

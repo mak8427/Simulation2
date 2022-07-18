@@ -15,7 +15,7 @@
 using namespace std;
 void Market::Food_value_change(){
     for (auto & good : Goods){
-         if (Stats[good+"_produced"]<Stats[good+"_consumed"]) {
+         if (Stats[good+"_produced"]>Stats[good+"_consumed"]) {
              float rect=float(Stats[good+"_consumed"])/float(Stats[good+"_produced"])-1;
             Stats[good+"_value"]=Stats[good+"_value"]+rect*log(Stats[good+"_value"]);
          }
@@ -42,16 +42,22 @@ void Market::Sender() {
         std::cout << Price_for_goods[x][0] << "  " << Price_for_goods[x][1] << "  " << Price_for_goods[x][2] << '\n';
     }
     int foods =Stats["Food_produced"];
+    cout<<foods<<"\n";
     float price;
     for(int i =0; i<Price_for_goods.size();i++){
         if (foods-Price_for_goods[i][2]>=0){
             foods-=Price_for_goods[i][2];
             Stats["Food_consumed"]+=Price_for_goods[i][2];
             price=Price_for_goods[i][1];
-
             Pops->at(Price_for_goods[i][0]).money-=price*Pops->at(Price_for_goods[i][0]).food_consumed();
             Pops->at(Price_for_goods[i][0]).food += Pops->at(Price_for_goods[i][0]).food_consumed();
-
+        }
+        else{
+            Stats["Food_consumed"]+=Price_for_goods[i][2];
+            price=Price_for_goods[i][1];
+            Pops->at(Price_for_goods[i][0]).money-=price*foods;
+            Pops->at(Price_for_goods[i][0]).food += foods;
+            break;
         }
     }
     Stats["Food_value"]=price;

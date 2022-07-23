@@ -38,9 +38,11 @@ public:
 
     void Sender();
     void  Food_value_change();
+    void Sender_cloth();
     void Update(){
         Market::Food_value_change();
         Market::Sender();
+        Market::Sender_cloth();
 
     }
 

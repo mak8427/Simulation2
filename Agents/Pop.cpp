@@ -10,9 +10,16 @@ float Pop::food_consumed(){
     int f=round(sqrt(float(number)));
     return f;
 }
+
+float Pop::cloth_used(){
+    int f=round(number/10);
+    return f;
+}
 void Pop::Food_variation(){
     markets->Stats["Food_consumed"]=markets->Stats["Food_consumed"]+food_consumed();
+    markets->Stats["Cloth_consumed"]=markets->Stats["Cloth_consumed"]+cloth_used();
     food=food-food_consumed();
+    cloth=cloth-cloth_used();
 };
 void  Pop::Pop_variation(){
 

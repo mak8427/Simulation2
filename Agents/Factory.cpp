@@ -17,11 +17,14 @@ float Factory::Troughput(){
 void Factory::Production(){
 
     production= Efficiency_parameter* pow((distribution_parameter*pow(investment,sigma_sostitution)+(1-distribution_parameter)*pow(workers->number,sigma_sostitution)),1/sigma_sostitution);
-    float money_gained=production*(markets->Stats[type+"_value"]);
+    money_gained=(production*markets->Stats[type+"_value"])*(1/(1+markets->Stats[type+"_Inflation"]));
     markets->Stats[type+"_produced"]=markets->Stats[type+"_produced"]+production;
     cash=cash+money_gained;
 };
 void Factory::Salary(){
+    if (cash<0){
+        cash=0;
+    }
     salary=cash*1;
     cash=cash-salary;
 

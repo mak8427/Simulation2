@@ -13,7 +13,7 @@
 
 
 using namespace std;
-void Market::Food_value_change(){
+void Market::value_change(){
     for (auto & good : Goods){
          if (Stats[good+"_produced"]>Stats[good+"_consumed"]) {
              float rect=float(Stats[good+"_consumed"])/float(Stats[good+"_produced"])-1;
@@ -27,12 +27,14 @@ void Market::Food_value_change(){
     }
 }
 void Market::Sender() {
+    float pre_good=Stats["Food_value"];
     float Price_per_good[Pops->size()][3];
     int i=0;
 
     i=0;
     vector<vector<float>> Price_for_goods;
     for(auto  &pop_z: *Pops){
+
         Price_for_goods.push_back({float(i),pop_z.factory->salary/2 / pop_z.food_consumed(),pop_z.food_consumed()});
         i++;
     }
@@ -61,10 +63,14 @@ void Market::Sender() {
         }
     }
     Stats["Food_value"]=price;
+    Stats["Food_Inflation"]=(Stats["Food_value"]/pre_good-1);
+    cout<<" inflation: "<<Stats["Food_Inflation"]<<endl;
+
     cout<<"price: "<<price<<endl;
 
 }
 void Market::Sender_cloth() {
+    float pre_good=Stats["Cloth_value"];
     float Price_per_good[Pops->size()][3];
     int i=0;
     vector<vector<float>> Price_for_goods;
@@ -86,7 +92,7 @@ void Market::Sender_cloth() {
             Stats["Cloth_consumed"]+=Price_for_goods[i][2];
             price=Price_for_goods[i][1];
             Pops->at(Price_for_goods[i][0]).money-=price*Pops->at(Price_for_goods[i][0]).cloth_used();
-            Pops->at(Price_for_goods[i][0]).food += Pops->at(Price_for_goods[i][0]).cloth_used();
+            Pops->at(Price_for_goods[i][0]).cloth += Pops->at(Price_for_goods[i][0]).cloth_used();
         }
         else{
             Stats["Cloth_consumed"]+=Price_for_goods[i][2];
@@ -97,6 +103,7 @@ void Market::Sender_cloth() {
         }
     }
     Stats["Cloth_value"]=price;
+    Stats["Cloth_Inflation"]=(Stats["Cloth_value"]/pre_good-1);
     cout<<"price: "<<price<<endl;
 
 }

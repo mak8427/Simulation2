@@ -27,10 +27,13 @@ public:
       pop_=y;
       tax_rate=z;
       market=q;
+
     }
     Government(){}
+    void Inflation();
     void Update(){
         Census();
+        Inflation();
     };
     void Census();
     void Reset();

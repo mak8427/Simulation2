@@ -22,9 +22,18 @@ void Government::Census(){
     for (auto & i : *fact_) {
         gdp=gdp+i->production * market->Stats["Food_value"];
     }
+
 }
 void Government::Reset(){
     n_tot=0;
     gdp=0;
     n_food=0;
+}
+
+void Government::Inflation(){
+    float inflation=0;
+    for (auto & i : *fact_) {
+        /*i->cash+=i->money_gained*market->Stats[i->type+"_Inflation"]; */
+
+    }
 }

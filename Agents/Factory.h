@@ -16,6 +16,7 @@ public:
     string type;
     float investment=1;
     float cash = 1000;
+    float money_gained=0;
     float sigma=0;
     float sigma_sostitution=0;
     float salary=1000;

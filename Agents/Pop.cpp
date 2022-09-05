@@ -8,18 +8,21 @@
 # include "Government.h"
 float Pop::food_consumed(){
     int f=round(float(number)/3);
-
+    if (f==0){
+        f=1;
+    }
     return f;
 }
 
 
 float Pop::cloth_used(){
-    int f=round(number/10);
+    int f = round(float(number) / 10);
+    if (f==0){
+        f=1;
+    }
     return f;
 }
 void Pop::Food_variation(){
-    markets->Stats["Food_consumed"]=markets->Stats["Food_consumed"]+food_consumed();
-    markets->Stats["Cloth_consumed"]=markets->Stats["Cloth_consumed"]+cloth_used();
     food=food-food_consumed();
     cloth=cloth-cloth_used();
 };
@@ -31,6 +34,9 @@ void  Pop::Pop_variation(){
         food=0;
         if (number<=0){
             number=1;
+        }
+        if (cloth<0){
+            cloth=0;
         }
 
     }

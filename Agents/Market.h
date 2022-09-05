@@ -24,9 +24,11 @@ public:
     std::vector<string> Goods {"Food", "Cloth"};
     map<string, float> Stats = { // This equals sign is optional
             {"Food_value", 100},
+            {"Food_Inflation", 0},
             {"Food_produced", 0},
             {"Food_consumed", 0},
             {"Cloth_value", 100},
+            {"Cloth_Inflation", 0},
             {"Cloth_produced", 0},
             {"Cloth_consumed", 0},
     };
@@ -37,10 +39,9 @@ public:
 
 
     void Sender();
-    void  Food_value_change();
+    void  value_change();
     void Sender_cloth();
     void Update(){
-        Market::Food_value_change();
         Market::Sender();
         Market::Sender_cloth();
 

@@ -18,7 +18,7 @@
   "Cloth": {
     "Production_methods": {
       "PM_1": {
-        "Efficiency_parameter": 1,
+        "Efficiency_parameter": 2,
         "Sigma": 0.8,
         "Investment_relation": 0.1,
         "distribution_parameter": 0.35

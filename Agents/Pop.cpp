@@ -40,7 +40,7 @@ void  Pop::Pop_variation(){
         }
 
     }
-    else if(months_with_food>=12){
+    else if(food>0){
         number=number+1+number*reproduction_rate;
     }
 

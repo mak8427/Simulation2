@@ -107,6 +107,7 @@ void Market::Sender_cloth() {
     Stats["Cloth_value"]=price;
     Stats["Cloth_Inflation"]=(Stats["Cloth_value"]/pre_good-1);
     cout<<"price: "<<price<<endl;
+    food_market=Price_for_goods;
 
 }
 

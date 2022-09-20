@@ -7,7 +7,7 @@
 #include "Market.h"
 # include "Government.h"
 float Pop::food_consumed(){
-    int f=round(float(number)/3);
+    int f=round(float(sqrt(number)));
     if (f==0){
         f=1;
     }

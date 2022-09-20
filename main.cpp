@@ -110,9 +110,11 @@ int main() {
         cout<<"Cloth price: "<<test_market.Stats["Cloth_value"];
 
         //file dump
-        myfile << i << ',' << govs.n_tot << ',' << govs.n_tot / n_agents << ',' << test_market.Stats["Food_consumed"] << ',' << test_market.Stats["Food_produced"] << ',' << test_market.Stats["Food_value"] << ',' << govs.gdp << endl;
+        myfile << i << ',' << govs.n_tot << ',' << govs.n_tot / n_agents << ',' << test_market.Stats["Food_consumed"] << ',' << test_market.Stats["Food_produced"] << ',' << test_market.Stats["Food_value"] << ',' << govs.gdp<< ','<< ;
 
-
+        for (int x = 0; x < test_market.food_market.size(); x++) {
+            myfile<<','<< test_market.food_market[x][1] << ',' << test_market.food_market[x][0]<<',';
+        }
         //Reset of variables
         govs.Reset();
         test_market.Stats["Food_consumed"]=0;

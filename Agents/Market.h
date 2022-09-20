@@ -20,6 +20,7 @@ class Pop ;
 
 class Market {
 public:
+    vector<vector<float>> food_market;
     std::vector<Pop>* Pops;
     std::vector<string> Goods {"Food", "Cloth"};
     map<string, float> Stats = { // This equals sign is optional

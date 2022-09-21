@@ -13,6 +13,7 @@ class Market;
 class Factory {
 public:
     vector<string> Goods {"Food", "Cloth"};
+    vector<float> cash_12_months;
     string type;
     float investment=1;
     float cash = 1000;
@@ -44,6 +45,7 @@ public:
 
     };
     float Troughput();
+    float Mean_cash_12_months();
     void Production();
     void Salary();
     float salary_();

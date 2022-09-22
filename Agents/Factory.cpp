@@ -26,6 +26,7 @@ void Factory::Salary(){
         cash=0;
     }
     float salary=Mean_cash_12_months();
+    salary=salary+rand()%2;
     if (salary<0){
         salary=money_gained;
     }
@@ -51,5 +52,6 @@ float Factory::Mean_cash_12_months(){
         sum=sum+cash_12_months[i];
     }
     float mean=sum/cash_12_months.size();
+
     return mean;
 }

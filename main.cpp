@@ -75,7 +75,12 @@ int main() {
     // Data dump
     ofstream myfile;
     myfile.open ("data.csv");
-
+    //HEADER
+    myfile << "iteration,"<<"total population,"<<"average population,"<<"food consumed,"<<"food produced,"<<"food value,"<<"gdp";
+    for (int i = 0; i <= n_agents; i++) {
+        myfile << ",Pop " << i << " food value,"<<"Pop index "<<i;
+    }
+    myfile<<endl;
     // main Loop
     int n_cloth=0;
     for(int i=0; i<ITERATIONS; i++){
@@ -113,7 +118,7 @@ int main() {
         myfile << i << ',' << govs.n_tot << ',' << govs.n_tot / n_agents << ',' << test_market.Stats["Food_consumed"] << ',' << test_market.Stats["Food_produced"] << ',' << test_market.Stats["Food_value"] << ',' << govs.gdp;
 
         for (int x = 0; x < test_market.food_market.size(); x++) {
-            myfile<<','<< test_market.food_market[x][1] << ',' << test_market.food_market[x][0]<<',';
+            myfile<<','<< test_market.food_market[x][1] << ',' << test_market.food_market[x][0];
         }
         myfile<<'\n';
         //Reset of variables

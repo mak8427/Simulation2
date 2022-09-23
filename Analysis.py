@@ -15,6 +15,7 @@ fig=plt.figure(figsize=(16,9))
 x = list(range(0, n_Pop))
 y=[]
 z=[]
+print("test")
 for i in range(0, n_Pop):
     y.append(data['Pop '+str(i)+" food value"][10])
     z.append(data['Pop '+str(i)+" Bought"][10])

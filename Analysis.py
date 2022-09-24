@@ -11,23 +11,31 @@ with open('Defines.json') as d:
 n_Pop=Defines['n_agents']
 data = pd.read_csv('cmake-build-debug/data.csv')
 print(data)
+#Level
+level=20
+
+#plot 1
 fig=plt.figure(figsize=(16,9))
-x = list(range(0, n_Pop))
+xnew = list(range( data['Pop '+str(0)+" Bought"][level], data['Pop '+str(n_Pop)+" Bought"][level]+1))
 y=[]
-z=[]
+x=[]
 print("test")
 for i in range(0, n_Pop):
-    y.append(data['Pop '+str(i)+" food value"][10])
-    z.append(data['Pop '+str(i)+" Bought"][10])
+    y.append(data['Pop '+str(i)+" food value"][level])
+    x.append(data['Pop '+str(i)+" Bought"][level])
 
 
-f = interp1d(y, z, kind='cubic')
+#f = interp1d(y, q, kind='cubic')
+#remove dupluiactes from y
+y = list(dict.fromkeys(y))
+x = list(dict.fromkeys(x))
+f=interp1d(x, y, kind='quadratic',)
+#f2= interp1d(z, q, kind='cubic')
 #for i in range(10,n_Pop,10):
 #    plt.plot(data['iteration'], data['Pop '+str(i)+" food value"], label='Pop '+str(i))
+plt.plot(x, y, 'o', xnew, f(xnew), '-')
 
 
-plt.plot(y, z, 'o', xnew, f(xnew), '-')
-plt.legend()
 
 plt.savefig('cmake-build-debug/Analysis.png')
 
@@ -44,7 +52,7 @@ q=0
 list1=list(range(n_Pop-2))
 for i in range(0,30):
 
-    plt.scatter(data['Pop '+str(i)+" food value"][20],data['Pop '+str(i)+" Bought"][20], label='Pop '+str(i))
+    plt.scatter(data['Pop '+str(i)+" food value"][level],data['Pop '+str(i)+" Bought"][level], label='Pop '+str(i))
     q+=1
     #plot with a log scale
 plt.savefig('cmake-build-debug/Analysis2.png')

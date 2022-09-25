@@ -33,8 +33,7 @@ f=interp1d(x, y, kind='quadratic',)
 #f2= interp1d(z, q, kind='cubic')
 #for i in range(10,n_Pop,10):
 #    plt.plot(data['iteration'], data['Pop '+str(i)+" food value"], label='Pop '+str(i))
-plt.plot(x, y, 'o', xnew, f(xnew), '-')
-
+plt.plot(x, y, 'o', xnew, f(xnew), '-',)
 
 
 plt.savefig('cmake-build-debug/Analysis.png')

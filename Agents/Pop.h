@@ -15,13 +15,18 @@
 #include <math.h>
 #include <chrono>
 #include <thread>
-
+#include <random>
+#include <iomanip>
 using namespace std;
 class Factory;
 class Market;
 class Government;
 class Pop {
 public:
+    map<string,float> Consumption{
+            {"Food_supply",1},
+            {"Food_importance",0.5}
+    };
     int number=100;
     float money=50;
     int cloth=0;

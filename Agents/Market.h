@@ -7,6 +7,9 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <iostream>
+#include <random>
+#include <iomanip>
 #include <vector>
 #include "Factory.h"
 #include "Pop.h"

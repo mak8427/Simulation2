@@ -6,6 +6,7 @@
 #include "Factory.h"
 #include "Market.h"
 # include "Government.h"
+
 float Pop::food_consumed(){
     int f=round(float(sqrt(number)));
     if (f==0){
@@ -48,12 +49,30 @@ void  Pop::Pop_variation(){
 
 };
 void Pop::SOL(){
-    if(food>-30){
+    if(food>0){
         months_with_food = months_with_food + 1;
+        Consumption["Food_supply"]=1;
+        std::uniform_real_distribution<float> distr(0.001,0.05);
+        std::random_device rd;
+        std::default_random_engine eng(rd());
+        Consumption["Food_importance"]=Consumption["Food_importance"]*(0.95+ distr(eng));
+
     }
-    else {
+    else if(food<0){
+        Consumption["Food_supply"]= 1+food/food_consumed();
+        std::uniform_real_distribution<float> distr(0.001,0.05);
+        std::random_device rd;
+        std::default_random_engine eng(rd());
+        Consumption["Food_importance"]=Consumption["Food_importance"]*(1.01+distr(eng));
         months_with_food=0;
         food=0;
+    }
+    else if(food==0){
+        if(months_with_food>=12){
+            months_with_food = months_with_food + 1;
+            Consumption["Food_supply"]=1;
+
+        };
     }
 
 

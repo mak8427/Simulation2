@@ -32,18 +32,19 @@ void  Pop::Pop_variation(){
     if (food<0){
         float food_per_capita=float(food_consumed())/float(number);
         number=number+food/food_per_capita;
+        number=number+1+number*reproduction_rate*(-food/food_consumed());
         food=0;
         if (number<=0){
             number=1;
         }
-        if (cloth<0){
-            cloth=0;
-        }
-
     }
-    else if(food>0){
+    else if(food>=0){
         number=number+1+number*reproduction_rate;
     }
+    if (cloth<0){
+        cloth=0;
+    }
+
 
 
 

@@ -4,7 +4,9 @@ import os
 import pandas as pd
 import json
 from scipy.interpolate import interp1d
-
+from scipy.optimize import curve_fit
+from scipy import stats
+import imageio
 # Read in the data
 with open('Defines.json') as d:
     Defines = json.load(d)
@@ -53,8 +55,19 @@ import matplotlib.animation as ani
 
 from celluloid import Camera
 from matplotlib import cm
+import warnings
+
+
+warnings.filterwarnings('ignore')
 
 camera = Camera(plt.figure())
+def func(x, a, b, c,):
+
+    return a * np.exp(-b * x) + c
+
+def objective(x, a, b, c, d):
+	return a * np.sin(b - x) + c * x**2 + d
+
 for _ in range(200):
     level = _+1
     # plot 1
@@ -64,19 +77,36 @@ for _ in range(200):
         y.append(data['Pop ' + str(i) + " food value"][level])
         x.append(data['Pop ' + str(i) + " Bought"][level])
 
-    index = [i for i in range(len(x)) if x.count(x[i]) > 12]
-    x_ = [x[i] for i in range(len(x)) if i not in index]
-    y_ = [y[i] for i in range(len(y)) if i not in index]
-    print(index)
-    plt.yscale('log')
-    plt.xscale('log')
-    #plt.ylim(y[-1]+y[-1]/10+50,y[1]-y[1]/10-50)
-    #plt.xlim(x[1]-x[1]/10-50, x[-1]+x[-1]/10)
-    #xnew = range(x_[0], x_[-1])
-    f = interp1d(x, y, kind='cubic')
+    popt, pcov = curve_fit(func, x, y)
+
+    res = stats.linregress(x, y)
     plt.plot(x, y, 'o',color='blue')
-    camera.snap()
-animation = camera.animate()
-animation.save('cmake-build-debug/animation.gif', writer='Pillow', fps=100)
+    plt.plot(x, func(np.array(x), *popt), 'r-',
+             label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
+    #plot a line with value data["Food Value"][level]
+    plt.plot(x, [data["food value"][level]]*len(x), 'g-')
+    plt.legend()
 
 
+    plt.savefig('i_gif/image'+str(_)+'.png', dpi=100)
+    plt.clf()
+#animation = camera.animate()
+#animation.save('cmake-build-debug/animation.gif', writer='Pillow', fps=100)
+
+def make_gif(input_folder, save_filepath):
+    episode_frames = []
+    time_per_step = 0.1
+    for root, _, files in os.walk(input_folder):
+        file_paths = [os.path.join(root, file) for file in files]
+        # sorted by modified time
+        file_paths = sorted(file_paths, key=lambda x: os.path.getmtime(x))
+        episode_frames = [imageio.imread(file_path)
+                          for file_path in file_paths if file_path.endswith('.png')]
+    episode_frames = np.array(episode_frames)
+    imageio.mimsave(save_filepath, episode_frames, duration=time_per_step)
+
+
+make_gif('./i_gif/', './test.gif')
+
+
+fig.show()

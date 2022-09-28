@@ -82,7 +82,7 @@ void Market::Sender_cloth() {
     Price_for_goods = Sort_Vector(Price_for_goods,1,Price_for_goods.size(),false);
 
     for (int x = 0; x < Price_for_goods.size(); x++) {
-        std::cout << Price_for_goods[x][0] << "  " << Price_for_goods[x][1] << "  " << Price_for_goods[x][2] << '\n';
+    /*std::cout << Price_for_goods[x][0] << "  " << Price_for_goods[x][1] << "  " << Price_for_goods[x][2] << '\n'; */
     }
     int cloths =Stats["Cloth_produced"];
     cout<<cloths<<"\n";

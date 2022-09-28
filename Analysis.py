@@ -11,10 +11,11 @@ import imageio
 with open('Defines.json') as d:
     Defines = json.load(d)
 n_Pop=Defines['n_agents']
+n_levels=Defines['ITERATIONS']-1
 data = pd.read_csv('cmake-build-debug/data.csv')
 print(data)
 #Level
-level=200
+level=10
 
 #plot 1
 fig=plt.figure(figsize=(16,9))
@@ -68,7 +69,8 @@ def func(x, a, b, c,):
 def objective(x, a, b, c, d):
 	return a * np.sin(b - x) + c * x**2 + d
 
-for _ in range(200):
+for _ in range(n_levels):
+
     level = _+1
     # plot 1
     y = []
@@ -77,7 +79,7 @@ for _ in range(200):
         y.append(data['Pop ' + str(i) + " food value"][level])
         x.append(data['Pop ' + str(i) + " Bought"][level])
 
-    popt, pcov = curve_fit(func, x, y)
+    popt, pcov = curve_fit(func, x, y, maxfev=1000000)
 
     res = stats.linregress(x, y)
     plt.plot(x, y, 'o',color='blue')
@@ -88,8 +90,9 @@ for _ in range(200):
     plt.legend()
 
 
-    plt.savefig('i_gif/image'+str(_)+'.png', dpi=100)
+    plt.savefig('i_gif/image'+str(_)+'.png',figsize=(16,9))
     plt.clf()
+    print("level "+str(_))
 #animation = camera.animate()
 #animation.save('cmake-build-debug/animation.gif', writer='Pillow', fps=100)
 

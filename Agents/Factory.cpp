@@ -25,7 +25,7 @@ void Factory::Salary(){
     if (cash<0){
         cash=0;
     }
-    float salary=Mean_cash_12_months();
+    salary=Mean_cash_12_months();
     salary=salary+rand()%2;
     if (salary<0){
         salary=money_gained;

@@ -16,31 +16,32 @@ data = pd.read_csv('cmake-build-debug/data.csv')
 print(data)
 #Level
 level=10
-
+GRAPH=False
 #plot 1
-fig=plt.figure(figsize=(16,9))
-xnew = list(range( data['Pop '+str(0)+" Bought"][level], data['Pop '+str(n_Pop)+" Bought"][level]))
-y=[]
-x=[]
-print("test")
-for i in range(0, n_Pop):
-    y.append(data['Pop '+str(i)+" food value"][level])
-    x.append(data['Pop '+str(i)+" Bought"][level])
+if GRAPH:
+    fig=plt.figure(figsize=(16,9))
+    xnew = list(range( data['Pop '+str(0)+" Bought"][level], data['Pop '+str(n_Pop)+" Bought"][level]))
+    y=[]
+    x=[]
+    print("test")
+    for i in range(0, n_Pop):
+        y.append(data['Pop '+str(i)+" food value"][level])
+        x.append(data['Pop '+str(i)+" Bought"][level])
 
-#find the index of repeated values in x
-index = [i for i in range(len(x)) if x.count(x[i]) > 1]
-#remove the repeated values
-x_ = [x[i] for i in range(len(x)) if i not in index]
-y_ = [y[i] for i in range(len(y)) if i not in index]
+    #find the index of repeated values in x
+    index = [i for i in range(len(x)) if x.count(x[i]) > 1]
+    #remove the repeated values
+    x_ = [x[i] for i in range(len(x)) if i not in index]
+    y_ = [y[i] for i in range(len(y)) if i not in index]
 
-xnew=range(x_[0],x_[-1])
-f=interp1d(x_, y_, kind='cubic')
-#f2= interp1d(z, q, kind='cubic')
-#for i in range(10,n_Pop,10):
-#    plt.plot(data['iteration'], data['Pop '+str(i)+" food value"], label='Pop '+str(i))
-plt.plot(x, y, 'o', xnew, f(xnew),'-',)
+    xnew=range(x_[0],x_[-1])
+    f=interp1d(x_, y_, kind='cubic')
+    #f2= interp1d(z, q, kind='cubic')
+    #for i in range(10,n_Pop,10):
+    #    plt.plot(data['iteration'], data['Pop '+str(i)+" food value"], label='Pop '+str(i))
+    plt.plot(x, y, 'o', xnew, f(xnew),'-',)
 
-plt.savefig('cmake-build-debug/Analysis.png')
+    plt.savefig('cmake-build-debug/Analysis.png')
 
 
 
@@ -63,7 +64,6 @@ warnings.filterwarnings('ignore')
 
 camera = Camera(plt.figure())
 def func(x, a, b, c,):
-
     return a * np.exp(-b * x) + c
 
 def objective(x, a, b, c, d):
@@ -77,17 +77,29 @@ for _ in range(n_levels):
     x = []
     for i in range(0, n_Pop):
         y.append(data['Pop ' + str(i) + " food value"][level])
-        x.append(data['Pop ' + str(i) + " Bought"][level])
+        if len(x)>0:
+            x.append(data['Pop ' + str(i) + " Bought"][level]+x[-1])
+        else:
+            x.append(data['Pop ' + str(i) + " Bought"][level])
 
-    popt, pcov = curve_fit(func, x, y, maxfev=1000000)
+    top25=round(len(x)*0.25)
+    x=x[top25:]
+    y=y[top25:]
+    mode=2
+    if mode == 1:
+        popt, pcov = curve_fit(func, x, y, maxfev=1000000)
+        plt.plot(x, func(np.array(x), *popt), 'r-',
+                 label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
+        plt.legend()
+    elif mode == 2:
+        model = np.poly1d(np.polyfit(x, y, 4))
+        plt.plot(x, model(x), 'r-')
 
-    res = stats.linregress(x, y)
     plt.plot(x, y, 'o',color='blue')
-    plt.plot(x, func(np.array(x), *popt), 'r-',
-             label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
+
     #plot a line with value data["Food Value"][level]
     plt.plot(x, [data["food value"][level]]*len(x), 'g-')
-    plt.legend()
+
 
 
     plt.savefig('i_gif/image'+str(_)+'.png',figsize=(16,9))
@@ -109,7 +121,7 @@ def make_gif(input_folder, save_filepath):
     imageio.mimsave(save_filepath, episode_frames, duration=time_per_step)
 
 
-make_gif('./i_gif/', './test.gif')
+make_gif('./i_gif/', 'test.gif')
 
 
 fig.show()

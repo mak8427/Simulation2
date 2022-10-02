@@ -101,7 +101,7 @@ for _ in range(n_levels):
     plt.plot(x, [data["food value"][level]]*len(x), 'g-')
 
 
-
+#s
     plt.savefig('i_gif/image'+str(_)+'.png',figsize=(16,9))
     plt.clf()
     print("level "+str(_))

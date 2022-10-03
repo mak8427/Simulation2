@@ -48,7 +48,6 @@ if GRAPH:
 #matplot lib animation
 #new df
 fig = plt.figure(figsize=(16, 9))
-#def buildmebarchart(i=int):
 
 
 import matplotlib.animation as ani

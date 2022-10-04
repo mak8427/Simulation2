@@ -1,6 +1,6 @@
 {
   "STAT": 100,
-  "ITERATIONS": 200,
+  "ITERATIONS": 500,
 
   "n_agents": 1000,
   "TAX_RATE": 0.0

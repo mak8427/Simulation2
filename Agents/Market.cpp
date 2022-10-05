@@ -27,6 +27,7 @@ void Market::value_change(){
     }
 }
 void Market::Sender() {
+    bool DEBUG_1=false;
     float pre_good=Stats["Food_value"];
     float Price_per_good[Pops->size()][3];
     int i=0;
@@ -39,9 +40,10 @@ void Market::Sender() {
         i++;
     }
     Price_for_goods = Sort_Vector(Price_for_goods,1,Price_for_goods.size(),false);
-
+    if(DEBUG_1==true){
     for (int x = 0; x < Price_for_goods.size(); x++) {
         std::cout << Price_for_goods[x][0] << "  " << Price_for_goods[x][1] << "  " << Price_for_goods[x][2] << '\n';
+    }
     }
     int foods =Stats["Food_produced"];
     cout<<foods<<"\n";

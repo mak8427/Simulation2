@@ -89,8 +89,13 @@ for _ in range(n_levels):
     y=y[top25:]
     index = [i for i in range(len(y)) if y[i] < data["food value"][level]]
 
-    fig, (ax1, ax2) = plt.subplots(2, 1)
-    fig.set_size_inches(16, 9)
+    fig = plt.figure(figsize=(16, 9))
+    import matplotlib.gridspec as gridspec
+    spec = gridspec.GridSpec(ncols=3, nrows=2, figure=fig)
+    ax1 = fig.add_subplot(spec[0, 0:2])
+    ax2 = fig.add_subplot(spec[1, 0:2])
+    ax3 = fig.add_subplot(spec[:, 2])
+
 
 
     if len(index)==0:
@@ -122,6 +127,9 @@ for _ in range(n_levels):
     ax2.set_xlabel('Iteration')
     ax2.set_ylabel('Total Population')
     ax2.set_title('Total Population')
+
+    violin_data=[data["Pop "+str(x)+" Population"][level] for x in range(0,n_Pop)]
+    ax3.violinplot(violin_data,showmeans=True)
 
 #s
     plt.savefig('i_gif/image'+str(_)+'.png',figsize=(16,9))

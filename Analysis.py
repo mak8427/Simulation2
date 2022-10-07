@@ -71,7 +71,8 @@ def objective(x, a, b, c, d):
 for _ in range(n_levels):
 
     level = _+1
-    # plot 1
+    # plot .
+
     y = []
     x = []
     level_q=0

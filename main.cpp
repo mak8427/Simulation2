@@ -129,7 +129,7 @@ int main() {
 
         //time taken for each loop
         auto t2 = high_resolution_clock::now();
-        cout<<"    Time: "<<duration_cast<std::chrono::microseconds>(t2-t1).count()<<" microseconds"<<std::endl;
+        cout<<"    .Time: "<<duration_cast<std::chrono::microseconds>(t2-t1).count()<<" microseconds"<<std::endl;
 
     }
 

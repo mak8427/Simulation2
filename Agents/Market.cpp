@@ -64,7 +64,9 @@ void Market::Sender() {
     }
     Stats["Food_value"]=price;
     for (int i=0; i<Price_for_goods.size();i++){
-        Pops->at(Price_for_goods[i][0]).money-=price*Pops->at(Price_for_goods[i][0]).food_consumed();
+        if (Price_per_good[i][1]>=price) {
+            Pops->at(Price_for_goods[i][0]).money -= price * Pops->at(Price_for_goods[i][0]).food_consumed();
+        }
     }
     Stats["Food_Inflation"]=(Stats["Food_value"]/pre_good-1);
     cout<<" inflation: "<<Stats["Food_Inflation"]<<endl;
@@ -103,10 +105,13 @@ void Market::Sender_cloth() {
             break;
         }
     }
-    for (int i=0; i<Price_for_goods.size();i++){
-        Pops->at(Price_for_goods[i][0]).money-=price*Pops->at(Price_for_goods[i][0]).cloth_used();
-    }
     Stats["Cloth_value"]=price;
+
+    for (int i=0; i<Price_for_goods.size();i++){
+        if(Price_for_goods[i][1]>=price){
+            Pops->at(Price_for_goods[i][0]).money-=price*Pops->at(Price_for_goods[i][0]).cloth_used();
+        }
+    }
     Stats["Cloth_Inflation"]=(Stats["Cloth_value"]/pre_good-1);
     cout<<"price: "<<price<<endl;
 }

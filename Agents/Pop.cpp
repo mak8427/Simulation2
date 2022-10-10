@@ -81,7 +81,6 @@ void Pop::SOL(){
     }
 
 
-
     /*
     if  (food < food_consumed()*reserve_constant) {
         if (money <= (food_consumed() + 1) * markets->Stats["Food_value"]) {

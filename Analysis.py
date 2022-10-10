@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import glob
 import pandas as pd
 import json
 from scipy.interpolate import interp1d
@@ -8,6 +9,14 @@ from scipy.optimize import curve_fit
 from scipy import stats
 import imageio
 # Read in the data
+
+
+
+files = glob.glob('i_gif/*')
+for f in files:
+    os.remove(f)
+
+
 with open('Defines.json') as d:
     Defines = json.load(d)
 n_Pop=Defines['n_agents']+1
@@ -90,12 +99,13 @@ for _ in range(n_levels):
     y=y[top25:]
     index = [i for i in range(len(y)) if y[i] < data["food value"][level]]
 
-    fig = plt.figure(figsize=(16, 9))
+    fig = plt.figure(figsize=(19, 10))
     import matplotlib.gridspec as gridspec
-    spec = gridspec.GridSpec(ncols=3, nrows=2, figure=fig)
+    spec = gridspec.GridSpec(ncols=3, nrows=3, figure=fig)
     ax1 = fig.add_subplot(spec[0, 0:2])
     ax2 = fig.add_subplot(spec[1, 0:2])
-    ax3 = fig.add_subplot(spec[:, 2])
+    ax3 = fig.add_subplot(spec[0:2, 2])
+    ax4 = fig.add_subplot(spec[2, 1])
 
 
 
@@ -111,7 +121,7 @@ for _ in range(n_levels):
                  label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
         ax1.legend()
     elif mode == 2:
-        model = np.poly1d(np.polyfit(x, y, 3))
+        model = np.poly1d(np.polyfit(x, y, 6))
         ax1.plot(x, model(x), 'r-')
 
     ax1.plot(x, y, 'o',color='blue')
@@ -131,6 +141,13 @@ for _ in range(n_levels):
 
     violin_data=[data["Pop "+str(x)+" Population"][level] for x in range(0,n_Pop)]
     ax3.violinplot(violin_data,showmeans=True)
+
+    with_food=[data["Pop "+str(x)+" Population"][level] for  x in range(0,n_Pop) if data["Pop "+str(x)+" food value"][level]>data["food value"][level]]
+    without_food=data["total population"][level]-sum(with_food)
+    print(without_food)
+    ax4.pie([without_food,sum(with_food)],labels=["Without Food","With Food"],autopct='%1.1f%%',shadow=True, startangle=90)
+
+
 
 #s
     plt.savefig('i_gif/image'+str(_)+'.png',figsize=(16,9))

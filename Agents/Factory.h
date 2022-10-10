@@ -32,7 +32,7 @@ public:
 
     Factory(Pop* insert_pop, Market* insert_good,Government* insert_gov, nlohmann::json insert_j, int random_int){
         //type=Goods[0];
-        type=Goods[random_int];
+        type=Goods[0];
         workers = insert_pop;
         markets = insert_good;
         gov=insert_gov;

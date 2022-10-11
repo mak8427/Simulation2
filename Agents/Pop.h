@@ -25,11 +25,13 @@ class Pop {
 public:
     map<string,float> Consumption{
             {"Food_supply",1},
-            {"Food_importance",0.5}
+            {"Food_importance",0.5},
+            {"Money_for_food",0},
+            {"Money_for_cloth",0}
     };
     int number=100;
     float money=50;
-    int cloth=0;
+    int cloth=1000;
     int food=1000;
     float reproduction_rate;
     int months_with_food=0;

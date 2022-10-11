@@ -16,16 +16,19 @@ float Pop::food_consumed(){
 }
 
 
+
+
 float Pop::cloth_used(){
-    int f = round(float(number) / 10);
-    if (f==0){
+
+    cloth -= round(float(number) / 12);
+    int f=number-cloth;
+    if (f<=0){
         f=1;
     }
     return f;
 }
 void Pop::Food_variation(){
     food=food-food_consumed();
-    cloth=cloth-cloth_used();
 };
 void  Pop::Pop_variation(){
 
@@ -40,7 +43,10 @@ void  Pop::Pop_variation(){
         }
     }
     else if(food>=0){
-        number=number+1+number*(1/(log(number+0.1))-0.15);
+        std::uniform_real_distribution<float> distr(0.05,0.1);
+        std::random_device rd;
+        std::default_random_engine eng(rd());
+        number=number+1+number*(1/(log(number+0.1))-0.15+distr(eng));
     }
     if (cloth<0){
         cloth=0;
@@ -51,20 +57,17 @@ void  Pop::Pop_variation(){
 
 };
 void Pop::SOL(){
+    std::uniform_real_distribution<float> distr(0.001,0.05);
+    std::random_device rd;
+    std::default_random_engine eng(rd());
+
     if(food>0){
         months_with_food = months_with_food + 1;
         Consumption["Food_supply"]=1;
-        std::uniform_real_distribution<float> distr(0.001,0.05);
-        std::random_device rd;
-        std::default_random_engine eng(rd());
         Consumption["Food_importance"]=Consumption["Food_importance"]*(0.95+ distr(eng));
-
     }
     else if(food<0){
         Consumption["Food_supply"]= 1+food/food_consumed();
-        std::uniform_real_distribution<float> distr(0.001,0.05);
-        std::random_device rd;
-        std::default_random_engine eng(rd());
         Consumption["Food_importance"]=Consumption["Food_importance"]*(1.01+distr(eng));
         if  (Consumption["Food_importance"]>0.99){
             Consumption["Food_importance"]=0.99;
@@ -76,8 +79,11 @@ void Pop::SOL(){
         if(months_with_food>=12){
             months_with_food = months_with_food + 1;
             Consumption["Food_supply"]=1;
-
         };
+    }
+    cout<<"food_importance  "<<Consumption["Food_importance"]<<"  "<<factory->type <<endl;
+    if(cloth>0){
+
     }
 
 

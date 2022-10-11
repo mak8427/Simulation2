@@ -46,7 +46,6 @@ void Market::Sender() {
     }
     }
     int foods =Stats["Food_produced"];
-    cout<<foods<<"\n";
     float price;
     for(int i =0; i<Price_for_goods.size();i++){
         if (foods-Price_for_goods[i][2]>=0){
@@ -89,7 +88,6 @@ void Market::Sender_cloth() {
     /*std::cout << Price_for_goods[x][0] << "  " << Price_for_goods[x][1] << "  " << Price_for_goods[x][2] << '\n'; */
     }
     int cloths =Stats["Cloth_produced"];
-    cout<<cloths<<"\n";
     float price;
     for(int i =0; i<Price_for_goods.size();i++){
         if (cloths-Price_for_goods[i][2]>=0){

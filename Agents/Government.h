@@ -37,7 +37,6 @@ public:
     };
     void Census();
     void Reset();
-
 };
 
 

@@ -16,7 +16,7 @@ using namespace std;
 void Government::Census(){
     for (auto & i : *pop_) {
         n_tot=n_tot+i.number;
-        n_food=n_food+i.food;
+        n_food=n_food+i.Goods["Food"];
 
     }
     for (auto & i : *fact_) {

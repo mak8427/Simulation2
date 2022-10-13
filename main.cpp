@@ -91,7 +91,7 @@ int main() {
         n_cloth=0;
         for (Pop& entity : pops) {
             entity.Update();
-            n_cloth=n_cloth+entity.cloth;
+            n_cloth=n_cloth+entity.Goods["Cloth"];
         }
         cout<<endl;
         test_market.Update();

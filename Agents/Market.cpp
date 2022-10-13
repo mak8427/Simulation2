@@ -52,12 +52,12 @@ void Market::Sender() {
             foods-=Price_for_goods[i][2];
             Stats["Food_consumed"]+=Price_for_goods[i][2];
             price=Price_for_goods[i][1];
-            Pops->at(Price_for_goods[i][0]).food += Pops->at(Price_for_goods[i][0]).food_consumed();
+            Pops->at(Price_for_goods[i][0]).Goods["Food"] += Pops->at(Price_for_goods[i][0]).food_consumed();
         }
         else{
             Stats["Food_consumed"]+=Price_for_goods[i][2];
             price=Price_for_goods[i][1];
-            Pops->at(Price_for_goods[i][0]).food += foods;
+            Pops->at(Price_for_goods[i][0]).Goods["Food"] += foods;
             break;
         }
     }
@@ -94,12 +94,12 @@ void Market::Sender_cloth() {
             cloths-=Price_for_goods[i][2];
             Stats["Cloth_consumed"]+=Price_for_goods[i][2];
             price=Price_for_goods[i][1];
-            Pops->at(Price_for_goods[i][0]).cloth += Pops->at(Price_for_goods[i][0]).cloth_used();
+            Pops->at(Price_for_goods[i][0]).Goods["Cloth"] += Pops->at(Price_for_goods[i][0]).cloth_used();
         }
         else{
             Stats["Cloth_consumed"]+=Price_for_goods[i][2];
             price=Price_for_goods[i][1];
-            Pops->at(Price_for_goods[i][0]).cloth += cloths;
+            Pops->at(Price_for_goods[i][0]).Goods["Cloth"] += cloths;
             break;
         }
     }

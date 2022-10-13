@@ -26,13 +26,16 @@ public:
     map<string,float> Consumption{
             {"Food_supply",1},
             {"Food_importance",0.5},
+            {"Cloth_importance", 0.5},
             {"Money_for_food",0},
             {"Money_for_cloth",0}
     };
+    map<string,float>Goods{
+            {"Food",0},
+            {"Cloth",0}
+    };
     int number=100;
     float money=50;
-    int cloth=1000;
-    int food=1000;
     float reproduction_rate;
     int months_with_food=0;
     nlohmann::json j=0;
@@ -59,7 +62,7 @@ public:
     Pop(int insert_number, int insert_money ,int insert_food, Factory* insert_factory,Market* insert_Market,Government* insert_gov,nlohmann::json insert_j){
         number=insert_number;
         money=insert_money;
-        food=insert_food;
+        Goods["Food"]=insert_food;
         factory = insert_factory;
         markets=insert_Market;
         gov=insert_gov;

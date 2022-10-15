@@ -34,8 +34,12 @@ public:
             {"Food",0},
             {"Cloth",0}
     };
+    map<string,std::uniform_real_distribution<float>> Goods_distribution{
+        {"Cloth",std::uniform_real_distribution<float>(0.001,0.5)},
+        {"Food",std::uniform_real_distribution<float>(0.5,1)}
+    };
     int number=100;
-    float money=50;
+    float money=10000;
     float reproduction_rate;
     int months_with_food=0;
     nlohmann::json j=0;
@@ -61,7 +65,7 @@ public:
     Pop(){};
     Pop(int insert_number, int insert_money ,int insert_food, Factory* insert_factory,Market* insert_Market,Government* insert_gov,nlohmann::json insert_j){
         number=insert_number;
-        money=insert_money;
+        money=10000;
         Goods["Food"]=insert_food;
         factory = insert_factory;
         markets=insert_Market;

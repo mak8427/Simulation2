@@ -36,7 +36,7 @@ void Market::Sender() {
     vector<vector<float>> Price_for_goods;
     for(auto  &pop_z: *Pops){
 
-        Price_for_goods.push_back({float(i),pop_z.factory->salary*pop_z.Consumption["Food_importance"] / pop_z.food_consumed(),pop_z.food_consumed()});
+        Price_for_goods.push_back({float(i),pop_z.Consumption["Money_for_Food"],pop_z.food_consumed()});
         i++;
     }
     Price_for_goods = Sort_Vector(Price_for_goods,1,Price_for_goods.size(),false);
@@ -79,7 +79,7 @@ void Market::Sender_cloth() {
     int i=0;
     vector<vector<float>> Price_for_goods;
     for(auto  &pop_z: *Pops){
-        Price_for_goods.push_back({float(i),pop_z.factory->salary*(1-pop_z.Consumption["Food_importance"])/ pop_z.cloth_used(),pop_z.cloth_used()});
+        Price_for_goods.push_back({float(i),pop_z.Consumption["Money_for_Cloth"],pop_z.cloth_used()});
         i++;
     }
     Price_for_goods = Sort_Vector(Price_for_goods,1,Price_for_goods.size(),false);

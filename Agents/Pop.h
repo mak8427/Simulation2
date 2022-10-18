@@ -27,8 +27,8 @@ public:
             {"Food_supply",1},
             {"Food_importance",0.5},
             {"Cloth_importance", 0.5},
-            {"Money_for_food",0},
-            {"Money_for_cloth",0}
+            {"Money_for_Food",0},
+            {"Money_for_Cloth",0}
     };
     map<string,float>Goods{
             {"Food",0},

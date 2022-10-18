@@ -109,9 +109,9 @@ for(auto &good : Goods){
             Consumption["Food_supply"] = 1;
         };
     }
-    if (Goods["Cloth"] > 0) {
-
-    }
+    Consumption["Cloth_importance"] = 1- Consumption["Food_importance"];
+    Consumption["Money_for_Food"]=factory->salary*Consumption["Food_importance"] / food_consumed();
+    Consumption["Money_for_Cloth"]=factory->salary*Consumption["Cloth_importance"] / cloth_used();
 
 };
 

@@ -87,19 +87,26 @@ for(auto &good : Goods){
 }
 */
 
-
+    float Free_money_in_salary= money/factory->salary ;
     auto distr = std::uniform_real_distribution<float>(0.001, 0.5);
+    float delta = Consumption["Food_importance"] * distr(eng);
+    float personal_loan=0;
     if (Goods["Food"] > 0) {
         months_with_food = months_with_food + 1;
         Consumption["Food_supply"] = 1;
-        Consumption["Food_importance"] = Consumption["Food_importance"] * (0.95 + distr(eng));
+        Consumption["Food_importance"] -= delta;
     } else if (Goods["Food"] < 0) {
         Consumption["Food_supply"] = 1 + Goods["Food"] / food_consumed();
-        Consumption["Food_importance"] = Consumption["Food_importance"] * (1.01 + distr(eng));
-        if (Consumption["Food_importance"] > 0.99 && money > factory->salary) {
+        Consumption["Food_importance"] += delta;
+        personal_loan = (Consumption["Food_importance"] - 0.99) *factory->salary;
+        if (Consumption["Food_importance"] > 0.99 && money > personal_loan) {
 
-        } else if (Consumption["Food_importance"] > 0.99 && money < factory->salary) {
+        } else if (Consumption["Food_importance"] > 0.99 && money < personal_loan) {
             Consumption["Food_importance"] = 0.99;
+            personal_loan=money;
+        }
+        else{
+            personal_loan=0;
         }
         months_with_food = 0;
         Goods["Food"] = 0;
@@ -109,8 +116,13 @@ for(auto &good : Goods){
             Consumption["Food_supply"] = 1;
         };
     }
-    Consumption["Cloth_importance"] = 1- Consumption["Food_importance"];
-    Consumption["Money_for_Food"]=factory->salary*Consumption["Food_importance"] / food_consumed();
+    if ((1- Consumption["Food_importance"])<0.01){
+        Consumption["Cloth_importance"]=0.01;
+    }
+    else{
+        Consumption["Cloth_importance"]=1- Consumption["Food_importance"];
+    }
+    Consumption["Money_for_Food"]=(factory->salary*Consumption["Food_importance"]+ personal_loan) / food_consumed();
     Consumption["Money_for_Cloth"]=factory->salary*Consumption["Cloth_importance"] / cloth_used();
 
 };

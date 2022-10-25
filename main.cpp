@@ -77,7 +77,7 @@ int main() {
     //HEADER
     myfile << "iteration,"<<"total population,"<<"average population,"<<"food consumed,"<<"food produced,"<<"food value,"<<"gdp";
     for (int i = 0; i <= n_agents; i++) {
-        myfile << ",Pop " << i << " food value,"<<"Pop index "<<i<<",Pop "<<i<<" Bought"<<",Pop "<<i<<" Population";
+        myfile << ",Pop " << i << " food value,"<<"Pop index "<<i<<",Pop "<<i<<" Bought"<<",Pop "<<i<<" Population"<<",Pop "<<i<<" Money"<<",Pop "<<i<<" Food Importance";
     }
     myfile<<endl;
     // main Loop
@@ -85,17 +85,28 @@ int main() {
     for(int i=0; i<ITERATIONS; i++){
         auto t1 = high_resolution_clock::now();
 
+
+
+        //main cycle
         for (Factory*& entity : factories) {
             entity->Update();
         }
         n_cloth=0;
         for (Pop& entity : pops) {
-            entity.Update();
+            entity.Food_variation();
+            entity.Money();
+            entity.Pop_variation();
+            entity.SOL();
+
             n_cloth=n_cloth+entity.Goods["Cloth"];
         }
         cout<<endl;
         test_market.Update();
+
+
         govs.Update();
+
+
 
         //Console dump
         cout<<"    Number of iterations: ";
@@ -117,7 +128,7 @@ int main() {
         myfile << i << ',' << govs.n_tot << ',' << govs.n_tot / n_agents << ',' << test_market.Stats["Food_consumed"] << ',' << test_market.Stats["Food_produced"] << ',' << test_market.Stats["Food_value"] << ',' << govs.gdp;
 
         for (int x = 0; x < test_market.food_market.size(); x++) {
-            myfile<<','<< test_market.food_market[x][1] << ',' << test_market.food_market[x][0]<<','<<test_market.food_market[x][2]<<","<<pops[test_market.food_market[x][0]].number;
+            myfile<<','<< test_market.food_market[x][1] << ',' << test_market.food_market[x][0]<<','<<test_market.food_market[x][2]<<","<<pops[test_market.food_market[x][0]].number<<","<<pops[test_market.food_market[x][0]].money<<","<<pops[test_market.food_market[x][0]].Consumption["Food_importance"];
         }
         myfile<<'\n';
         //Reset of variables

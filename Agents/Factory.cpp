@@ -26,7 +26,6 @@ void Factory::Salary(){
         cash=0;
     }
     salary=Mean_cash_12_months();
-    salary=salary+rand()%2;
     if (salary<0){
         salary=money_gained;
     }

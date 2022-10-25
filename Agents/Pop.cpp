@@ -34,7 +34,8 @@ void Pop::Pop_variation() {
 
     if (Goods["Food"] < 0) {
         float food_per_capita = float(food_consumed()) / float(number);
-        number = number + Goods["Food"] / food_per_capita;
+        int var = round(float(Goods["Food"]) / food_per_capita);
+        number = number + var;
         /* number=number+1+number*reproduction_rate*(-food/food_consumed()); */
         if (number <= 0) {
             number = 1;
@@ -88,24 +89,28 @@ for(auto &good : Goods){
 */
 
     float Free_money_in_salary= money/factory->salary ;
-    auto distr = std::uniform_real_distribution<float>(0.001, 0.5);
+    auto distr = std::uniform_real_distribution<float>(0.001, 0.1);
     float delta = Consumption["Food_importance"] * distr(eng);
+
     float personal_loan=0;
-    if (Goods["Food"] > 0) {
+    if (Goods["Food"] > 0 ){
         months_with_food = months_with_food + 1;
         Consumption["Food_supply"] = 1;
         Consumption["Food_importance"] -= delta;
-    } else if (Goods["Food"] < 0) {
-        Consumption["Food_supply"] = 1 + Goods["Food"] / food_consumed();
-        Consumption["Food_importance"] += delta;
-        personal_loan = (Consumption["Food_importance"] - 0.99) *factory->salary;
-        if (Consumption["Food_importance"] > 0.99 && money > personal_loan) {
 
-        } else if (Consumption["Food_importance"] > 0.99 && money < personal_loan) {
-            Consumption["Food_importance"] = 0.99;
+    } else if (Goods["Food"] < 0) {
+        Consumption["Food_supply"] = Goods["Food"] / food_consumed();
+        Consumption["Food_importance"] += delta;
+        if (Consumption["Food_importance"] > 0.99 && money > personal_loan) {
+            personal_loan = (Consumption["Food_importance"] - 0.99) * factory->salary;
+
+        }
+        if (Consumption["Food_importance"] > 0.99 && money < personal_loan) {
+            cout<<"done!";
+            Consumption["Food_importance"] = 0.98;
             personal_loan=money;
         }
-        else{
+        if (Consumption["Food_importance"] <=0.99) {
             personal_loan=0;
         }
         months_with_food = 0;

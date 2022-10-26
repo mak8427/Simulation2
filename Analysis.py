@@ -137,6 +137,7 @@ with ThreadPoolExecutor(max_workers=10) as executor:
         ax1.set_title('Demand Curve')
 
         ax2.plot(data["iteration"][0:level],data["total population"][0:level],color='blue')
+        ax2.plot(data["iteration"][0:level], [max(data["total population"][0:level])] * len(data["iteration"][0:level]), 'g-')
         ax2.set_xlabel('Iteration')
         ax2.set_ylabel('Total Population')
         ax2.set_title('Total Population')

@@ -98,7 +98,7 @@ int main() {
             entity.Pop_variation();
             entity.SOL();
 
-            n_cloth=n_cloth+entity.Goods["Cloth"];
+            n_cloth=n_cloth+entity.Goods["Cloth"]/entity.number;
         }
         cout<<endl;
         test_market.Update();
@@ -115,7 +115,7 @@ int main() {
         cout<<"     tot numbers: "<<govs.n_tot;
         cout<<"     avg numbers: "<< govs.n_tot / n_agents;
         cout<<"     food needed "<<test_market.Stats["Food_consumed"];
-        cout<<"     cloth  "<<n_cloth/govs.n_tot<<'\n';
+        cout<<"     cloth per capita"<<n_cloth/n_agents<<'\n';
         cout<<"     gdp "<<govs.gdp;
         cout<<"     reserve "<<govs.reserve;
         cout<<"     food reserve "<<govs.n_food;

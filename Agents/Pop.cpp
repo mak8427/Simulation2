@@ -18,7 +18,7 @@ float Pop::food_consumed() {
 
 float Pop::cloth_used() {
 
-    Goods["Cloth"] -= round(float(number) / 12);
+
     int f = number - Goods["Cloth"];
     if (f <= 0) {
         f = 1;
@@ -28,6 +28,7 @@ float Pop::cloth_used() {
 
 void Pop::Food_variation() {
     Goods["Food"] = Goods["Food"] - food_consumed();
+    Goods["Cloth"] -= round(float(number) / 12);
 };
 
 void Pop::Pop_variation() {
@@ -37,6 +38,7 @@ void Pop::Pop_variation() {
         int var = round(float(Goods["Food"]) / food_per_capita);
         number = number + var;
         /* number=number+1+number*reproduction_rate*(-food/food_consumed()); */
+
         if (number <= 0) {
             number = 1;
         }
@@ -44,7 +46,8 @@ void Pop::Pop_variation() {
         std::uniform_real_distribution<float> distr(0.05, 0.1);
         std::random_device rd;
         std::default_random_engine eng(rd());
-        number = number + 1 + number * (1 / (log(number + 0.1)) - 0.15 + distr(eng));
+        number = number + 1 + number * ((1 / (log(number + 0.1)) - 0.15) *(1 + distr(eng)));
+
     }
     if (Goods["Cloth"] <= 0) {
 
@@ -129,7 +132,6 @@ for(auto &good : Goods){
     }
     Consumption["Money_for_Food"]=(factory->salary*Consumption["Food_importance"]+ personal_loan) / food_consumed();
     Consumption["Money_for_Cloth"]=factory->salary*Consumption["Cloth_importance"] / cloth_used();
-
 };
 
 void Pop::Migration() {

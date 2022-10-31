@@ -66,7 +66,6 @@ void Sort(map<int, float>& M)
         A.push_back(it);
     }
 
-
     // Sort using comparator function
     sort(A.begin(), A.end(), cmp);
 

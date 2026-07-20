@@ -33,7 +33,6 @@ public:
     void Inflation();
     void Update(){
         Census();
-        Inflation();
     };
     void Census();
     void Reset();

@@ -40,6 +40,7 @@ public:
     };
     int number=100;
     float money=10000;
+    float personal_loan=0;
     float reproduction_rate;
     int months_with_food=0;
     nlohmann::json j=0;

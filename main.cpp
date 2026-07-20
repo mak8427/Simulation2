@@ -14,6 +14,11 @@
 using namespace nlohmann;
 using namespace std;
 int randoms(int y){
+    static bool seeded = false;
+    if (!seeded) {
+        srand(time(nullptr));
+        seeded = true;
+    }
     int v= rand() % y + 1;
     return v;
 };
@@ -56,16 +61,12 @@ int main() {
 
     // Allocate the population and factories
     for (int i = 0; i <= n_agents; i++) {
-        Factory *test_factory;
-        factories.push_back(test_factory);
-        pops.push_back(Pop(randoms(STAT), randoms(STAT), randoms(STAT), factories[i], &test_market, &govs, Pop_j["Pop"]));
+        factories.push_back(nullptr);
+        pops.push_back(Pop(randoms(STAT), randoms(STAT), randoms(STAT), nullptr, &test_market, &govs, Pop_j["Pop"]));
     }
     for (int i = 0; i <= n_agents; i++) {
-
         factories[i] = new Factory(&pops[i], &test_market, &govs, production_methods_j, distr(gen));
-    }
-    for (int i = 0; i <= n_agents; i++) {
-        pops[i] = Pop(randoms(STAT), randoms(STAT), randoms(STAT), factories[i], &test_market, &govs, Pop_j["Pop"]);
+        pops[i].factory = factories[i];
     }
 
     // Initialize the Goverment

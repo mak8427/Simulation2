@@ -17,7 +17,10 @@ void Market::value_change(){
     for (auto & good : Goods){
          if (Stats[good+"_produced"]>Stats[good+"_consumed"]) {
              float rect=float(Stats[good+"_consumed"])/float(Stats[good+"_produced"])-1;
-            Stats[good+"_value"]=Stats[good+"_value"]+rect*log(Stats[good+"_value"]);
+            Stats[good+"_value"]=Stats[good+"_value"]+rect*log(std::max(1.0f, Stats[good+"_value"]));
+         }
+         else if (Stats[good+"_produced"] == 0 && Stats[good+"_consumed"] == 0){
+             continue;
          }
          else{
              float rect=(1-1/(float(Stats[good+"_produced"])/float(Stats[good+"_consumed"])))/5;
@@ -27,55 +30,47 @@ void Market::value_change(){
     }
 }
 void Market::Sender() {
-    bool DEBUG_1=false;
     float pre_good=Stats["Food_value"];
-    float Price_per_good[Pops->size()][3];
     int i=0;
 
-    i=0;
     vector<vector<float>> Price_for_goods;
     for(auto  &pop_z: *Pops){
-
         Price_for_goods.push_back({float(i),pop_z.Consumption["Money_for_Food"],pop_z.food_consumed()});
         i++;
     }
     Price_for_goods = Sort_Vector(Price_for_goods,1,Price_for_goods.size(),false);
-    if(DEBUG_1==true){
-    for (int x = 0; x < Price_for_goods.size(); x++) {
-        std::cout << Price_for_goods[x][0] << "  " << Price_for_goods[x][1] << "  " << Price_for_goods[x][2] << '\n';
-    }
-    }
-    int foods =Stats["Food_produced"];
-    float price;
+
+    int foods = Stats["Food_produced"];
+    float price = Stats["Food_value"];
+    float consumed = 0;
     for(int i =0; i<Price_for_goods.size();i++){
-        if (foods-Price_for_goods[i][2]>=0){
-            foods-=Price_for_goods[i][2];
-            Stats["Food_consumed"]+=Price_for_goods[i][2];
-            price=Price_for_goods[i][1];
-            Pops->at(Price_for_goods[i][0]).Goods["Food"] += Pops->at(Price_for_goods[i][0]).food_consumed();
+        int idx = Price_for_goods[i][0];
+        float demand = Pops->at(idx).food_consumed();
+        if (foods >= demand){
+            foods -= demand;
+            consumed += demand;
+            price = Price_for_goods[i][1];
+            Pops->at(idx).Goods["Food"] += demand;
+            Pops->at(idx).money -= price * demand;
         }
         else{
-            Stats["Food_consumed"]+=Price_for_goods[i][2];
-            price=Price_for_goods[i][1];
-            Pops->at(Price_for_goods[i][0]).Goods["Food"] += foods;
+            consumed += foods;
+            price = Price_for_goods[i][1];
+            Pops->at(idx).Goods["Food"] += foods;
+            Pops->at(idx).money -= price * foods;
             break;
         }
     }
-    Stats["Food_value"]=price;
-    for (int i=0; i<Price_for_goods.size();i++){
-        if (Price_per_good[i][1]>=price) {
-            Pops->at(Price_for_goods[i][0]).money -= price * Pops->at(Price_for_goods[i][0]).food_consumed();
-        }
-    }
-    Stats["Food_Inflation"]=(Stats["Food_value"]/pre_good-1);
+    Stats["Food_consumed"] += consumed;
+    Stats["Food_value"] = price;
+    Stats["Food_Inflation"] = (Stats["Food_value"]/pre_good - 1);
     cout<<" inflation: "<<Stats["Food_Inflation"]<<endl;
 
     cout<<"price: "<<price<<endl;
-    food_market=Price_for_goods;
+    food_market = Price_for_goods;
 }
 void Market::Sender_cloth() {
     float pre_good=Stats["Cloth_value"];
-    float Price_per_good[Pops->size()][3];
     int i=0;
     vector<vector<float>> Price_for_goods;
     for(auto  &pop_z: *Pops){
@@ -84,33 +79,30 @@ void Market::Sender_cloth() {
     }
     Price_for_goods = Sort_Vector(Price_for_goods,1,Price_for_goods.size(),false);
 
-    for (int x = 0; x < Price_for_goods.size(); x++) {
-    /*std::cout << Price_for_goods[x][0] << "  " << Price_for_goods[x][1] << "  " << Price_for_goods[x][2] << '\n'; */
-    }
-    int cloths =Stats["Cloth_produced"];
-    float price;
+    int cloths = Stats["Cloth_produced"];
+    float price = Stats["Cloth_value"];
+    float consumed = 0;
     for(int i =0; i<Price_for_goods.size();i++){
-        if (cloths-Price_for_goods[i][2]>=0){
-            cloths-=Price_for_goods[i][2];
-            Stats["Cloth_consumed"]+=Price_for_goods[i][2];
-            price=Price_for_goods[i][1];
-            Pops->at(Price_for_goods[i][0]).Goods["Cloth"] += Pops->at(Price_for_goods[i][0]).cloth_used();
+        int idx = Price_for_goods[i][0];
+        float demand = Pops->at(idx).cloth_used();
+        if (cloths >= demand){
+            cloths -= demand;
+            consumed += demand;
+            price = Price_for_goods[i][1];
+            Pops->at(idx).Goods["Cloth"] += demand;
+            Pops->at(idx).money -= price * demand;
         }
         else{
-            Stats["Cloth_consumed"]+=Price_for_goods[i][2];
-            price=Price_for_goods[i][1];
-            Pops->at(Price_for_goods[i][0]).Goods["Cloth"] += cloths;
+            consumed += cloths;
+            price = Price_for_goods[i][1];
+            Pops->at(idx).Goods["Cloth"] += cloths;
+            Pops->at(idx).money -= price * cloths;
             break;
         }
     }
-    Stats["Cloth_value"]=price;
-
-    for (int i=0; i<Price_for_goods.size();i++){
-        if(Price_for_goods[i][1]>=price){
-            Pops->at(Price_for_goods[i][0]).money-=price*Pops->at(Price_for_goods[i][0]).cloth_used();
-        }
-    }
-    Stats["Cloth_Inflation"]=(Stats["Cloth_value"]/pre_good-1);
+    Stats["Cloth_consumed"] += consumed;
+    Stats["Cloth_value"] = price;
+    Stats["Cloth_Inflation"] = (Stats["Cloth_value"]/pre_good - 1);
     cout<<"price: "<<price<<endl;
 }
 

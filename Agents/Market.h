@@ -48,7 +48,6 @@ public:
     void Update(){
         Market::Sender();
         Market::Sender_cloth();
-
     }
 
 };

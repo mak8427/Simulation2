@@ -4,13 +4,13 @@
 #include<iostream>
 #include<vector>
 #include<map>
-#include "../Agents//Pop.h"
+#include<algorithm>
 
 class Pop;
 
 using namespace std;
 
-int Partition(vector<float> &v, int start, int end){
+inline int Partition(vector<float> &v, int start, int end){
 
     int pivot = end;
     int j = start;
@@ -25,7 +25,7 @@ int Partition(vector<float> &v, int start, int end){
 
 }
 
-void Quicksort(vector<float> &v, int start, int end ){
+inline void Quicksort(vector<float> &v, int start, int end ){
 
     if(start<end){
         int p = Partition(v,start,end);
@@ -34,19 +34,19 @@ void Quicksort(vector<float> &v, int start, int end ){
     }
 
 }
-void PrintVector(vector<float> v){
+inline void PrintVector(vector<float> v){
     for(int i=0;i<v.size();++i)
         cout<<v[i]<<" ";
     cout<<"\n\n";
 }
 
-bool cmp(pair<int, float>& a,
+inline bool cmp(pair<int, float>& a,
          pair<int, float>& b)
 {
     return a.second < b.second;
 }
 
-auto Array1(float logic[][3], int q, float j[3]){
+inline auto Array1(float logic[][3], int q, float j[3]){
     for (int i = 0; i < 3; i++) {
         j[i] = logic[q][i];
     }
@@ -54,7 +54,7 @@ auto Array1(float logic[][3], int q, float j[3]){
 }
 
 
-void Sort(map<int, float>& M)
+inline void Sort(map<int, float>& M)
 {
 
     // Declare vector of pairs
@@ -78,7 +78,7 @@ void Sort(map<int, float>& M)
 }
 
 //function that sorts a coulmn of a matrix in descending order
-void SortMatrix(float m[][3] , int column,int length, bool test ){
+inline void SortMatrix(float m[][3] , int column,int length, bool test ){
     float f[3];
     float x[3];
     int index=0;
@@ -107,7 +107,7 @@ void SortMatrix(float m[][3] , int column,int length, bool test ){
 
 }
 
-auto Sort_Vector(vector<vector<float>> m , int column,int length, bool test ){
+inline auto Sort_Vector(vector<vector<float>> m , int column,int length, bool test ){
     vector<float> f;
     vector<float> x;
 
@@ -132,9 +132,3 @@ auto Sort_Vector(vector<vector<float>> m , int column,int length, bool test ){
 
     return m;
 }
-
-
-
-
-
-

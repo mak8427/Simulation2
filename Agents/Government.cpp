@@ -20,7 +20,7 @@ void Government::Census(){
 
     }
     for (auto & i : *fact_) {
-        gdp=gdp+i->production * market->Stats["Food_value"];
+        gdp=gdp+i->production * market->Stats[i->type+"_value"];
     }
 
 }

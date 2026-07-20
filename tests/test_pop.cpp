@@ -1,484 +1,373 @@
 #include "test_utils.h"
-#include "../Agents/Pop.h"
 #include "../Agents/Factory.h"
-#include "../Agents/Market.h"
 #include "../Agents/Government.h"
-#include "../lib/json.hpp"
-#include <vector>
-#include <map>
+#include "../Agents/Market.h"
+#include "../Agents/Pop.h"
+
 #include <cmath>
-#include <string>
+#include <random>
+#include <vector>
 
-static nlohmann::json make_config(float reserve_constant = 0.5f, float reproduction_rate = 0.02f) {
-    return nlohmann::json{{"reserve_constant", reserve_constant}, {"reproduction_rate", reproduction_rate}};
+using namespace std;
+
+static nlohmann::json pop_config(float reproduction_rate = 0.02f) {
+    return {{"reserve_constant", 0.5f},
+            {"reproduction_rate", reproduction_rate}};
 }
 
-TEST(default_constructor) {
-    Pop p;
-    EXPECT_EQ(p.number, 100);
-    EXPECT_EQ(p.money, 10000.0f);
-    EXPECT_EQ(p.personal_loan, 0.0f);
-    EXPECT_EQ(p.months_with_food, 0);
-    EXPECT_EQ(p.reserve_constant, 0.0f);
-    EXPECT_EQ(p.Goods["Food"], 0.0f);
-    EXPECT_EQ(p.Goods["Cloth"], 0.0f);
-    EXPECT_EQ(p.Consumption["Food_supply"], 1.0f);
-    EXPECT_FLOAT_EQ(p.Consumption["Food_importance"], 0.5f, 1e-6f);
-    EXPECT_FLOAT_EQ(p.Consumption["Cloth_importance"], 0.5f, 1e-6f);
-    EXPECT_EQ(p.Consumption["Money_for_Food"], 0.0f);
-    EXPECT_EQ(p.Consumption["Money_for_Cloth"], 0.0f);
+static int paper_population_next(int population, double carrying_capacity,
+                                 double growth_rate, double dt = 1.0) {
+    if (population <= 0 || carrying_capacity <= 0) return 0;
+    double next = carrying_capacity /
+        (1.0 + (carrying_capacity / population - 1.0) *
+                   std::exp(-growth_rate * dt));
+    return static_cast<int>(std::lround(next));
 }
 
-TEST(parameterized_constructor) {
-    std::vector<Pop> pops;
-    std::vector<Factory*> factory_ptrs;
+struct PopContext {
+    vector<Pop> pops;
+    vector<Factory*> factories;
+    Market market{&pops, &factories};
+    Government government{&factories, &pops, 0.0f, &market};
     Factory factory;
-    Market market(&pops);
-    Government gov(&factory_ptrs, &pops, 0.15f, &market);
-    factory.workers = nullptr;
-    factory.gov = &gov;
-    factory.markets = &market;
-    factory_ptrs.push_back(&factory);
 
-    nlohmann::json j = make_config(0.75f, 0.03f);
+    PopContext() {
+        factory.gov = &government;
+        factory.markets = &market;
+        factory.worker_count = 1;
+        factory.workforce = 100;
+        factories.push_back(&factory);
+    }
+};
 
-    Pop p(250, 999, 42, &factory, &market, &gov, j);
-    EXPECT_EQ(p.number, 250);
-    EXPECT_EQ(p.money, 10000.0f);
-    EXPECT_EQ(p.Goods["Food"], 42.0f);
-    EXPECT_EQ(p.factory, &factory);
-    EXPECT_EQ(p.markets, &market);
-    EXPECT_EQ(p.gov, &gov);
-    EXPECT_FLOAT_EQ(p.reserve_constant, 0.75f, 1e-6f);
-    EXPECT_FLOAT_EQ(p.reproduction_rate, 0.03f, 1e-6f);
+TEST(default_constructor_has_safe_zero_state_for_links_and_growth_rate) {
+    Pop pop;
+    EXPECT_EQ(pop.number, 100);
+    EXPECT_FLOAT_EQ(pop.money, 10000.0, 0.0001);
+    EXPECT_FLOAT_EQ(pop.reproduction_rate, 0.0f, 0.0001f);
+    EXPECT_EQ(pop.factory, nullptr);
+    EXPECT_EQ(pop.markets, nullptr);
+    EXPECT_EQ(pop.gov, nullptr);
 }
 
-TEST(food_consumed_normal) {
-    Pop p;
-    p.number = 100;
-    EXPECT_EQ(p.food_consumed(), 100.0f);
+TEST(parameterized_constructor_honors_every_inserted_value) {
+    PopContext context;
+    Pop pop(250, 999, 42, &context.factory, &context.market,
+            &context.government, pop_config(0.03f));
+
+    EXPECT_EQ(pop.number, 250);
+    EXPECT_FLOAT_EQ(pop.money, 999.0, 0.0001);
+    EXPECT_FLOAT_EQ(pop.Goods["Food"], 42.0f, 0.0001f);
+    EXPECT_EQ(pop.factory, &context.factory);
+    EXPECT_EQ(pop.markets, &context.market);
+    EXPECT_EQ(pop.gov, &context.government);
+    EXPECT_FLOAT_EQ(pop.reserve_constant, 0.5f, 0.0001f);
+    EXPECT_FLOAT_EQ(pop.reproduction_rate, 0.03f, 0.0001f);
 }
 
-TEST(food_consumed_zero_pop) {
-    Pop p;
-    p.number = 0;
-    EXPECT_EQ(p.food_consumed(), 1.0f);
+TEST(food_demand_is_one_per_person_and_zero_when_extinct) {
+    Pop pop;
+    pop.number = 123;
+    EXPECT_FLOAT_EQ(pop.food_consumed(), 123.0f, 0.0001f);
+    pop.number = 0;
+    EXPECT_FLOAT_EQ(pop.food_consumed(), 0.0f, 0.0001f);
 }
 
-TEST(food_consumed_various) {
-    Pop p;
-    p.number = 1;
-    EXPECT_EQ(p.food_consumed(), 1.0f);
-    p.number = 100;
-    EXPECT_EQ(p.food_consumed(), 100.0f);
-    p.number = 1000;
-    EXPECT_EQ(p.food_consumed(), 1000.0f);
+TEST(cloth_demand_uses_rounded_monthly_need_and_existing_stock) {
+    Pop pop;
+    pop.number = 120;
+    pop.Goods["Cloth"] = 3;
+    EXPECT_FLOAT_EQ(pop.cloth_used(), 7.0f, 0.0001f);
+    pop.Goods["Cloth"] = 10;
+    EXPECT_FLOAT_EQ(pop.cloth_used(), 0.0f, 0.0001f);
+    pop.number = 0;
+    pop.Goods["Cloth"] = 0;
+    EXPECT_FLOAT_EQ(pop.cloth_used(), 0.0f, 0.0001f);
 }
 
-TEST(cloth_used_sufficient) {
-    Pop p;
-    p.number = 120;
-    p.Goods["Cloth"] = 50.0f;
-    float used = p.cloth_used();
-    EXPECT_EQ(used, 0.0f);
+TEST(consumption_reduces_food_and_cloth_by_population_need) {
+    Pop pop;
+    pop.number = 100;
+    pop.Goods["Food"] = 200;
+    pop.Goods["Cloth"] = 30;
+    pop.Food_variation();
+    EXPECT_FLOAT_EQ(pop.Goods["Food"], 100.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(pop.Goods["Cloth"], 22.0f, 0.0001f);
 }
 
-TEST(cloth_used_deficit) {
-    Pop p;
-    p.number = 120;
-    p.Goods["Cloth"] = 3.0f;
-    float used = p.cloth_used();
-    EXPECT_EQ(used, 7.0f);
+TEST(paper_equation_is_stationary_when_capacity_equals_population) {
+    Pop pop;
+    pop.number = 100;
+    pop.reproduction_rate = 0.2f;
+    mt19937 gen(7);
+
+    pop.Pop_variation(gen, 100.0f);
+
+    EXPECT_EQ(pop.number, 100);
+    EXPECT_EQ(pop.number, paper_population_next(100, 100, 0.2));
 }
 
-TEST(cloth_used_zero_cloth) {
-    Pop p;
-    p.number = 120;
-    p.Goods["Cloth"] = 0.0f;
-    float used = p.cloth_used();
-    EXPECT_EQ(used, 10.0f);
+TEST(implicit_capacity_uses_food_stock_before_period_consumption) {
+    Pop pop;
+    pop.number = 100;
+    pop.reproduction_rate = 0.2f;
+    pop.Goods["Food"] = 100;
+    mt19937 gen(7);
+
+    pop.Food_variation();
+    EXPECT_FLOAT_EQ(pop.Goods["Food"], 0.0f, 0.0001f);
+    pop.Pop_variation(gen);
+
+    EXPECT_EQ(pop.number, 100);
 }
 
-TEST(cloth_used_rounding) {
-    Pop p;
-    p.number = 1;
-    p.Goods["Cloth"] = 0.0f;
-    float used = p.cloth_used();
-    EXPECT_EQ(used, 1.0f);
+TEST(paper_equation_grows_toward_capacity_when_capacity_is_higher) {
+    Pop pop;
+    pop.number = 100;
+    pop.reproduction_rate = 0.2f;
+    mt19937 gen(7);
+
+    pop.Pop_variation(gen, 200.0f);
+
+    EXPECT_EQ(pop.number, paper_population_next(100, 200, 0.2));
+    EXPECT_GT(pop.number, 100);
+    EXPECT_LT(pop.number, 200);
 }
 
-TEST(food_variation) {
-    Pop p;
-    p.number = 100;
-    p.Goods["Food"] = 200.0f;
-    p.Goods["Cloth"] = 30.0f;
-    p.Food_variation();
-    EXPECT_EQ(p.Goods["Food"], 100.0f);
-    EXPECT_EQ(p.Goods["Cloth"], 22.0f);
+TEST(paper_equation_declines_gradually_toward_positive_lower_capacity) {
+    Pop pop;
+    pop.number = 100;
+    pop.reproduction_rate = 0.2f;
+    mt19937 gen(7);
+
+    pop.Pop_variation(gen, 50.0f);
+
+    EXPECT_EQ(pop.number, paper_population_next(100, 50, 0.2));
+    EXPECT_LT(pop.number, 100);
+    EXPECT_GT(pop.number, 50);
 }
 
-TEST(pop_variation_growth) {
-    Pop p;
-    p.number = 100;
-    p.Goods["Food"] = 50.0f;
-    int old_number = p.number;
-    p.Pop_variation();
-    EXPECT_GT(p.number, old_number);
+TEST(zero_capacity_is_the_extinction_idealization) {
+    Pop pop;
+    pop.number = 100;
+    pop.reproduction_rate = 0.2f;
+    mt19937 gen(7);
+
+    pop.Pop_variation(gen, 0.0f);
+
+    EXPECT_EQ(pop.number, 0);
+    EXPECT_FLOAT_EQ(pop.Goods["Food"], 0.0f, 0.0001f);
 }
 
-TEST(pop_variation_starvation) {
-    Pop p;
-    p.number = 100;
-    p.Goods["Food"] = -50.0f;
-    int old_number = p.number;
-    p.Pop_variation();
-    EXPECT_LT(p.number, old_number);
-    EXPECT_GT(p.number, 0);
+TEST(zero_growth_rate_leaves_population_unchanged_for_any_positive_capacity) {
+    Pop below_capacity;
+    below_capacity.number = 100;
+    below_capacity.reproduction_rate = 0.0f;
+    Pop above_capacity = below_capacity;
+    mt19937 gen(7);
+
+    below_capacity.Pop_variation(gen, 200.0f);
+    above_capacity.Pop_variation(gen, 50.0f);
+
+    EXPECT_EQ(below_capacity.number, 100);
+    EXPECT_EQ(above_capacity.number, 100);
 }
 
-TEST(pop_variation_starvation_clamp_to_one) {
-    Pop p;
-    p.number = 2;
-    p.Goods["Food"] = -200.0f;
-    p.Pop_variation();
-    EXPECT_EQ(p.number, 1);
+TEST(high_growth_rate_converges_to_capacity_in_one_discrete_step) {
+    Pop pop;
+    pop.number = 100;
+    pop.reproduction_rate = 50.0f;
+    mt19937 gen(7);
+
+    pop.Pop_variation(gen, 240.0f);
+
+    EXPECT_EQ(pop.number, paper_population_next(100, 240, 50));
+    EXPECT_EQ(pop.number, 240);
 }
 
-TEST(pop_variation_cloth_floor) {
-    Pop p;
-    p.number = 5;
-    p.Goods["Cloth"] = -5.0f;
-    p.Goods["Food"] = 50.0f;
-    p.Pop_variation();
-    EXPECT_EQ(p.Goods["Cloth"], 0.0f);
+TEST(extinct_population_remains_extinct_even_with_positive_capacity) {
+    Pop pop;
+    pop.number = 0;
+    pop.reproduction_rate = 0.2f;
+    pop.Goods["Food"] = 100;
+    mt19937 gen(7);
+
+    pop.Pop_variation(gen, 100.0f);
+
+    EXPECT_EQ(pop.number, 0);
+    EXPECT_FLOAT_EQ(pop.Goods["Food"], 0.0f, 0.0001f);
 }
 
-TEST(sol_food_positive) {
-    std::vector<Pop> pops;
-    std::vector<Factory*> factory_ptrs;
-    Factory factory;
-    Market market(&pops);
-    Government gov(&factory_ptrs, &pops, 0.0f, &market);
-    factory.workers = nullptr;
-    factory.gov = &gov;
-    factory.markets = &market;
-    factory_ptrs.push_back(&factory);
+TEST(total_food_capacity_is_allocated_proportionally_across_pop_groups) {
+    vector<Pop> pops(2);
+    pops[0].number = 60;
+    pops[1].number = 180;
+    pops[0].reproduction_rate = std::log(2.0f);
+    pops[1].reproduction_rate = std::log(2.0f);
+    const float total_capacity = 120.0f;
+    mt19937 gen(7);
 
-    Pop p(100, 0, 50, &factory, &market, &gov, make_config());
-    p.Consumption["Food_importance"] = 0.5f;
-    int old_months = p.months_with_food;
+    Pop::Population_variation(pops, gen, total_capacity);
 
-    p.SOL();
-
-    EXPECT_EQ(p.months_with_food, old_months + 1);
-    EXPECT_EQ(p.Consumption["Food_supply"], 1.0f);
-    EXPECT_LT(p.Consumption["Food_importance"], 0.5f);
+    EXPECT_EQ(pops[0].number + pops[1].number,
+              paper_population_next(240, total_capacity, std::log(2.0)));
+    EXPECT_EQ(pops[1].number, 3 * pops[0].number);
 }
 
-TEST(sol_food_negative) {
-    std::vector<Pop> pops;
-    std::vector<Factory*> factory_ptrs;
-    Factory factory;
-    Market market(&pops);
-    Government gov(&factory_ptrs, &pops, 0.0f, &market);
-    factory.workers = nullptr;
-    factory.gov = &gov;
-    factory.markets = &market;
-    factory_ptrs.push_back(&factory);
+TEST(aggregate_rounding_does_not_create_a_floor_per_pop_group) {
+    vector<Pop> pops(201);
+    for (Pop& pop : pops) {
+        pop.number = 7;
+        pop.reproduction_rate = 0.05f;
+    }
+    const int initial_population = 7 * static_cast<int>(pops.size());
+    const float total_capacity = 566;
+    mt19937 gen(7);
 
-    Pop p(100, 0, -1, &factory, &market, &gov, make_config());
-    p.Consumption["Food_importance"] = 0.5f;
-    p.months_with_food = 10;
+    Pop::Population_variation(pops, gen, total_capacity);
 
-    p.SOL();
-
-    EXPECT_EQ(p.months_with_food, 0);
-    EXPECT_GT(p.Consumption["Food_importance"], 0.5f);
-    EXPECT_EQ(p.Goods["Food"], 0.0f);
-    EXPECT_LT(p.Consumption["Food_supply"], 0.0f);
+    int actual_population = 0;
+    for (const Pop& pop : pops) actual_population += pop.number;
+    EXPECT_EQ(actual_population,
+              paper_population_next(initial_population, total_capacity, 0.05));
+    EXPECT_LT(actual_population, initial_population);
 }
 
-TEST(sol_food_zero_months_ge_12) {
-    std::vector<Pop> pops;
-    std::vector<Factory*> factory_ptrs;
-    Factory factory;
-    Market market(&pops);
-    Government gov(&factory_ptrs, &pops, 0.0f, &market);
-    factory.workers = nullptr;
-    factory.gov = &gov;
-    factory.markets = &market;
-    factory_ptrs.push_back(&factory);
+TEST(population_growth_clears_depleted_cloth_stock) {
+    Pop pop;
+    pop.number = 100;
+    pop.reproduction_rate = 0.02f;
+    pop.Goods["Food"] = 1;
+    pop.Goods["Cloth"] = -4;
+    mt19937 gen(11);
 
-    Pop p(100, 0, 0, &factory, &market, &gov, make_config());
-    p.months_with_food = 12;
-
-    p.SOL();
-
-    EXPECT_EQ(p.months_with_food, 13);
-    EXPECT_EQ(p.Consumption["Food_supply"], 1.0f);
+    pop.Pop_variation(gen, 150.0f);
+    EXPECT_FLOAT_EQ(pop.Goods["Cloth"], 0.0f, 0.0001f);
 }
 
-TEST(sol_food_zero_months_lt_12) {
-    std::vector<Pop> pops;
-    std::vector<Factory*> factory_ptrs;
-    Factory factory;
-    Market market(&pops);
-    Government gov(&factory_ptrs, &pops, 0.0f, &market);
-    factory.workers = nullptr;
-    factory.gov = &gov;
-    factory.markets = &market;
-    factory_ptrs.push_back(&factory);
+TEST(sol_moves_priority_from_food_when_stocked) {
+    PopContext context;
+    Pop pop(100, 1200, 50, &context.factory, &context.market,
+            &context.government, pop_config());
+    pop.Consumption["Food_importance"] = 0.5f;
+    mt19937 gen(5);
 
-    Pop p(100, 0, 0, &factory, &market, &gov, make_config());
-    p.Consumption["Food_supply"] = 999.0f;
-    p.months_with_food = 5;
-
-    p.SOL();
-
-    EXPECT_EQ(p.months_with_food, 5);
-    EXPECT_EQ(p.Consumption["Food_supply"], 999.0f);
+    pop.SOL(gen);
+    EXPECT_EQ(pop.months_with_food, 1);
+    EXPECT_LT(pop.Consumption["Food_importance"], 0.5f);
+    EXPECT_FLOAT_EQ(pop.Consumption["Food_supply"], 1.0f, 0.0001f);
 }
 
-TEST(sol_personal_loan_set) {
-    std::vector<Pop> pops;
-    std::vector<Factory*> factory_ptrs;
-    Factory factory;
-    Market market(&pops);
-    Government gov(&factory_ptrs, &pops, 0.0f, &market);
-    factory.workers = nullptr;
-    factory.gov = &gov;
-    factory.markets = &market;
-    factory.salary = 1000.0f;
-    factory_ptrs.push_back(&factory);
+TEST(sol_moves_priority_to_food_when_starving) {
+    PopContext context;
+    Pop pop(100, 1200, -10, &context.factory, &context.market,
+            &context.government, pop_config());
+    pop.Consumption["Food_importance"] = 0.5f;
+    pop.months_with_food = 4;
+    mt19937 gen(5);
 
-    Pop p(100, 0, -1, &factory, &market, &gov, make_config());
-    p.Consumption["Food_importance"] = 0.99f;
-    p.money = 10000.0f;
-
-    p.SOL();
-
-    EXPECT_GT(p.Consumption["Food_importance"], 0.99f);
-    EXPECT_GT(p.personal_loan, 0.0f);
+    pop.SOL(gen);
+    EXPECT_EQ(pop.months_with_food, 0);
+    EXPECT_GT(pop.Consumption["Food_importance"], 0.5f);
+    EXPECT_LT(pop.Consumption["Food_supply"], 0.0f);
+    EXPECT_FLOAT_EQ(pop.Goods["Food"], 0.0f, 0.0001f);
 }
 
-TEST(sol_food_importance_clamp_when_poor) {
-    std::vector<Pop> pops;
-    std::vector<Factory*> factory_ptrs;
-    Factory factory;
-    Market market(&pops);
-    Government gov(&factory_ptrs, &pops, 0.0f, &market);
-    factory.workers = nullptr;
-    factory.gov = &gov;
-    factory.markets = &market;
-    factory.salary = 1000.0f;
-    factory_ptrs.push_back(&factory);
+TEST(sol_extinct_pop_has_no_budget_or_personal_loan) {
+    Pop pop;
+    pop.number = 0;
+    pop.personal_loan = 50;
+    pop.Consumption["Money_for_Food"] = 20;
+    pop.Consumption["Money_for_Cloth"] = 10;
+    mt19937 gen(5);
 
-    Pop p(100, 0, -1, &factory, &market, &gov, make_config());
-    p.Consumption["Food_importance"] = 0.99f;
-    p.money = 0.5f;
-
-    p.SOL();
-
-    EXPECT_EQ(p.Consumption["Food_importance"], 0.98f);
-    EXPECT_EQ(p.personal_loan, 0.0f);
+    pop.SOL(gen);
+    EXPECT_FLOAT_EQ(pop.personal_loan, 0.0, 0.0001);
+    EXPECT_FLOAT_EQ(pop.Consumption["Money_for_Food"], 0.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(pop.Consumption["Money_for_Cloth"], 0.0f, 0.0001f);
 }
 
-TEST(sol_money_for_food_and_cloth_set) {
-    std::vector<Pop> pops;
-    std::vector<Factory*> factory_ptrs;
-    Factory factory;
-    Market market(&pops);
-    Government gov(&factory_ptrs, &pops, 0.0f, &market);
-    factory.workers = nullptr;
-    factory.gov = &gov;
-    factory.markets = &market;
-    factory.salary = 1000.0f;
-    factory_ptrs.push_back(&factory);
+TEST(unemployed_pop_bids_from_savings_without_dereferencing_government) {
+    Pop pop;
+    pop.number = 100;
+    pop.money = 1200;
+    pop.Goods["Food"] = 10;
+    pop.Goods["Cloth"] = 0;
+    pop.Consumption["Food_importance"] = 0.5f;
+    mt19937 gen(13);
 
-    Pop p(100, 0, 50, &factory, &market, &gov, make_config());
-    p.Goods["Cloth"] = 0.0f;
-    p.Consumption["Food_importance"] = 0.4f;
-
-    p.SOL();
-
-    EXPECT_GT(p.Consumption["Money_for_Food"], 0.0f);
-    EXPECT_GT(p.Consumption["Money_for_Cloth"], 0.0f);
+    pop.SOL(gen);
+    EXPECT_GT(pop.Consumption["Money_for_Food"], 0.0f);
+    EXPECT_FLOAT_EQ(pop.Consumption["Money_for_Cloth"], 0.0f, 0.0001f);
 }
 
-TEST(sol_cloth_importance_min) {
-    std::vector<Pop> pops;
-    std::vector<Factory*> factory_ptrs;
-    Factory factory;
-    Market market(&pops);
-    Government gov(&factory_ptrs, &pops, 0.0f, &market);
-    factory.workers = nullptr;
-    factory.gov = &gov;
-    factory.markets = &market;
-    factory.salary = 1000.0f;
-    factory_ptrs.push_back(&factory);
+TEST(satisfied_cloth_need_produces_no_cloth_bid) {
+    PopContext context;
+    context.factory.salary = 1000;
+    Pop pop(120, 0, 10, &context.factory, &context.market,
+            &context.government, pop_config());
+    pop.Goods["Cloth"] = 10;
+    mt19937 gen(17);
 
-    Pop p(100, 0, -1, &factory, &market, &gov, make_config());
-    p.Consumption["Food_importance"] = 0.99f;
-    p.money = 0.0f;
-
-    p.SOL();
-
-    EXPECT_EQ(p.Consumption["Cloth_importance"], 0.01f);
+    pop.SOL(gen);
+    EXPECT_FLOAT_EQ(pop.Consumption["Money_for_Cloth"], 0.0f, 0.0001f);
 }
 
-TEST(sol_cloth_demand_zero) {
-    std::vector<Pop> pops;
-    std::vector<Factory*> factory_ptrs;
-    Factory factory;
-    Market market(&pops);
-    Government gov(&factory_ptrs, &pops, 0.0f, &market);
-    factory.workers = nullptr;
-    factory.gov = &gov;
-    factory.markets = &market;
-    factory.salary = 1000.0f;
-    factory_ptrs.push_back(&factory);
+TEST(money_transfers_full_salary_without_tax) {
+    PopContext context;
+    context.factory.salary = 1000;
+    context.factory.workforce = 100;
+    Pop pop(100, 25, 0, &context.factory, &context.market,
+            &context.government, pop_config());
 
-    Pop p(100, 0, 50, &factory, &market, &gov, make_config());
-    p.Goods["Cloth"] = 999.0f;
-    p.Consumption["Food_importance"] = 0.5f;
-
-    p.SOL();
-
-    EXPECT_EQ(p.Consumption["Money_for_Cloth"], 0.0f);
+    pop.Money();
+    EXPECT_FLOAT_EQ(pop.money, 1025.0, 0.0001);
+    EXPECT_FLOAT_EQ(context.government.reserve, 0.0f, 0.0001f);
 }
 
-TEST(money_salary_no_tax) {
-    std::vector<Pop> pops;
-    std::vector<Factory*> factory_ptrs;
-    Factory factory;
-    Market market(&pops);
-    Government gov(&factory_ptrs, &pops, 0.0f, &market);
-    factory.workers = nullptr;
-    factory.gov = &gov;
-    factory.markets = &market;
-    factory.salary = 1000.0f;
-    factory_ptrs.push_back(&factory);
+TEST(money_splits_gross_salary_between_worker_and_tax_reserve) {
+    PopContext context;
+    context.government.tax_rate = 0.2f;
+    context.factory.salary = 1000;
+    context.factory.workforce = 100;
+    Pop pop(100, 25, 0, &context.factory, &context.market,
+            &context.government, pop_config());
 
-    Pop p(100, 0, 50, &factory, &market, &gov, make_config());
-    float old_money = p.money;
-    float old_reserve = gov.reserve;
-
-    p.Money();
-
-    EXPECT_EQ(p.money, old_money + 1000.0f);
-    EXPECT_EQ(gov.reserve, old_reserve);
+    pop.Money();
+    EXPECT_FLOAT_EQ(pop.money, 825.0, 0.0001);
+    EXPECT_FLOAT_EQ(context.government.reserve, 200.0f, 0.0001f);
 }
 
-TEST(money_salary_with_tax) {
-    std::vector<Pop> pops;
-    std::vector<Factory*> factory_ptrs;
-    Factory factory;
-    Market market(&pops);
-    Government gov(&factory_ptrs, &pops, 0.2f, &market);
-    factory.workers = nullptr;
-    factory.gov = &gov;
-    factory.markets = &market;
-    factory.salary = 1000.0f;
-    factory_ptrs.push_back(&factory);
+TEST(shared_payroll_is_proportional_to_population) {
+    PopContext context;
+    context.government.tax_rate = 0.1f;
+    context.factory.salary = 200;
+    context.factory.worker_count = 2;
+    context.factory.workforce = 100;
+    Pop small(25, 0, 0, &context.factory, &context.market,
+              &context.government, pop_config());
+    Pop large(75, 0, 0, &context.factory, &context.market,
+              &context.government, pop_config());
 
-    Pop p(100, 0, 50, &factory, &market, &gov, make_config());
-    float old_money = p.money;
-    float old_reserve = gov.reserve;
-
-    p.Money();
-
-    EXPECT_EQ(p.money, old_money + 800.0f);
-    EXPECT_EQ(gov.reserve, old_reserve + 200.0f);
+    small.Money();
+    large.Money();
+    EXPECT_FLOAT_EQ(small.money, 45.0, 0.0001);
+    EXPECT_FLOAT_EQ(large.money, 135.0, 0.0001);
+    EXPECT_FLOAT_EQ(context.government.reserve, 20.0f, 0.0001f);
 }
 
-TEST(edge_zero_population) {
-    Pop p;
-    p.number = 0;
-    EXPECT_EQ(p.food_consumed(), 1.0f);
+TEST(unemployed_or_zero_workforce_pop_receives_no_salary) {
+    PopContext context;
+    Pop unemployed(100, 10, 0, nullptr, &context.market,
+                   &context.government, pop_config());
+    unemployed.Money();
+    EXPECT_FLOAT_EQ(unemployed.money, 10.0, 0.0001);
 
-    p.Goods["Food"] = 0.0f;
-    p.Goods["Cloth"] = 0.0f;
-    p.Food_variation();
-    EXPECT_LT(p.Goods["Food"], 0.0f);
-
-    float needed = std::max(1.0f, round(0.0f / 12.0f));
-    EXPECT_EQ(needed, 1.0f);
-}
-
-TEST(edge_large_population) {
-    Pop p;
-    p.number = 1000000;
-    EXPECT_EQ(p.food_consumed(), 1000000.0f);
-
-    p.Goods["Food"] = 2000000.0f;
-    p.Goods["Cloth"] = 100000.0f;
-    p.Food_variation();
-    EXPECT_EQ(p.Goods["Food"], 1000000.0f);
-
-    p.Pop_variation();
-    EXPECT_GT(p.number, 0);
-}
-
-TEST(edge_negative_food_supply) {
-    Pop p;
-    p.number = 100;
-    p.Goods["Food"] = -50.0f;
-    p.Goods["Cloth"] = 0.0f;
-
-    int old_number = p.number;
-    p.Pop_variation();
-    EXPECT_LT(p.number, old_number);
-    EXPECT_EQ(p.Goods["Cloth"], 0.0f);
-}
-
-TEST(edge_all_money_spent) {
-    std::vector<Pop> pops;
-    std::vector<Factory*> factory_ptrs;
-    Factory factory;
-    Market market(&pops);
-    Government gov(&factory_ptrs, &pops, 0.0f, &market);
-    factory.workers = nullptr;
-    factory.gov = &gov;
-    factory.markets = &market;
-    factory.salary = 1000.0f;
-    factory_ptrs.push_back(&factory);
-
-    Pop p(100, 0, 50, &factory, &market, &gov, make_config());
-    p.money = 0.0f;
-    p.Consumption["Food_importance"] = 0.5f;
-
-    p.SOL();
-    EXPECT_GE(p.money, 0.0f);
-
-    p.Money();
-    EXPECT_GT(p.money, 0.0f);
-}
-
-TEST(edge_personal_loan_persists) {
-    std::vector<Pop> pops;
-    std::vector<Factory*> factory_ptrs;
-    Factory factory;
-    Market market(&pops);
-    Government gov(&factory_ptrs, &pops, 0.0f, &market);
-    factory.workers = nullptr;
-    factory.gov = &gov;
-    factory.markets = &market;
-    factory.salary = 1000.0f;
-    factory_ptrs.push_back(&factory);
-
-    Pop p(100, 0, -1, &factory, &market, &gov, make_config());
-    p.Consumption["Food_importance"] = 0.99f;
-    p.money = 10000.0f;
-
-    p.SOL();
-    float loan_after_first = p.personal_loan;
-    EXPECT_GT(loan_after_first, 0.0f);
-
-    p.Goods["Food"] = -1.0f;
-    p.Consumption["Food_importance"] = 0.99f;
-    p.SOL();
-    float loan_after_second = p.personal_loan;
-    EXPECT_GT(loan_after_second, 0.0f);
+    Pop employed(100, 10, 0, &context.factory, &context.market,
+                 &context.government, pop_config());
+    context.factory.workforce = 0;
+    employed.Money();
+    EXPECT_FLOAT_EQ(employed.money, 10.0, 0.0001);
 }
 
 int main() {

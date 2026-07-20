@@ -13,6 +13,7 @@
 #include <thread>
 #include <random>
 #include <iomanip>
+#include <vector>
 using namespace std;
 class Factory;
 class Market;
@@ -35,38 +36,42 @@ public:
         {"Food",std::uniform_real_distribution<float>(0.5,1)}
     };
     int number = 100;
-    float money = 10000;
-    float personal_loan = 0;
-    float reproduction_rate;
+    double money = 10000;
+    double personal_loan = 0;
+    float reproduction_rate = 0;
     int months_with_food = 0;
     nlohmann::json j = 0;
     float reserve_constant = 0;
-    Factory* factory;
-    Market* markets;
-    Government* gov;
+    Factory* factory = nullptr;
+    Market* markets = nullptr;
+    Government* gov = nullptr;
 
     void  Food_variation();
-    void  Pop_variation();
+    void  Pop_variation(std::mt19937& gen);
+    void  Pop_variation(std::mt19937& gen, float carrying_capacity);
+    static void Population_variation(std::vector<Pop>& pops,
+                                     std::mt19937& gen,
+                                     float total_carrying_capacity);
     void  Money();
     float food_consumed();
-    void SOL();
+    void SOL(std::mt19937& gen);
     void Migration();
     float cloth_used();
 
     bool Employed() { return factory != nullptr; }
     void TrySwitchJob(vector<Factory*>& factories, std::mt19937& gen);
 
-    void Update() {
+    void Update(std::mt19937& gen) {
         Pop::Food_variation();
         Pop::Money();
-        Pop::Pop_variation();
-        Pop::SOL();
+        Pop::Pop_variation(gen);
+        Pop::SOL(gen);
     };
 
     Pop(){};
     Pop(int insert_number, int insert_money, int insert_food, Factory* insert_factory, Market* insert_Market, Government* insert_gov, nlohmann::json insert_j) {
         number = insert_number;
-        money = 10000;
+        money = insert_money;
         Goods["Food"] = insert_food;
         factory = insert_factory;
         markets = insert_Market;

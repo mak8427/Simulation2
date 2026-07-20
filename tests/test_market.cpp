@@ -1,925 +1,275 @@
 #include "test_utils.h"
-#include "../Agents/Market.h"
-#include "../Agents/Pop.h"
 #include "../Agents/Factory.h"
 #include "../Agents/Government.h"
+#include "../Agents/Market.h"
+#include "../Agents/Pop.h"
 #include "../lib/Algorithms.h"
 
-#include <cmath>
 #include <vector>
-#include <string>
 
 using namespace std;
 
-static Factory make_factory(float salary = 1000.0f) {
-    Factory f;
-    f.salary = salary;
-    return f;
+static Factory offer(const string& type, int stock, float price, double cash = 0) {
+    Factory factory;
+    factory.type = type;
+    factory.production = stock;
+    factory.my_price = price;
+    factory.cash = cash;
+    factory.money_gained = 0;
+    factory.stock_sold = 0;
+    return factory;
 }
 
-static Government make_gov(float tax_rate = 0.0f) {
-    Government g;
-    g.tax_rate = tax_rate;
-    g.reserve = 0.0f;
-    return g;
+static Pop bidder(int number, double money, float food_bid, float cloth_bid = 0) {
+    Pop pop;
+    pop.number = number;
+    pop.money = money;
+    pop.Goods["Food"] = 0;
+    pop.Goods["Cloth"] = 0;
+    pop.Consumption["Money_for_Food"] = food_bid;
+    pop.Consumption["Money_for_Cloth"] = cloth_bid;
+    return pop;
 }
 
-static Pop make_pop(int number, float money, float food_goods, float cloth_goods,
-                    float money_for_food, float money_for_cloth,
-                    Factory* factory, Government* gov) {
-    Pop p;
-    p.number = number;
-    p.money = money;
-    p.Goods["Food"] = food_goods;
-    p.Goods["Cloth"] = cloth_goods;
-    p.Consumption["Money_for_Food"] = money_for_food;
-    p.Consumption["Money_for_Cloth"] = money_for_cloth;
-    p.factory = factory;
-    p.gov = gov;
-    p.markets = nullptr;
-    return p;
+static double monetary_total(const vector<Pop>& pops,
+                             const vector<Factory*>& factories) {
+    double total = 0;
+    for (const Pop& pop : pops) total += pop.money;
+    for (const Factory* factory : factories) total += factory->cash;
+    return total;
 }
 
-// ==================== Market Constructor Tests ====================
-
-TEST(Market_Constructor_Defaults) {
+TEST(constructor_initializes_both_good_statistics) {
     vector<Pop> pops;
-    Market m(&pops);
+    vector<Factory*> factories;
+    Market market(&pops, &factories);
 
-    EXPECT_EQ(m.Pops, &pops);
-    EXPECT_EQ(m.Goods.size(), static_cast<size_t>(2));
-    EXPECT_EQ(m.Goods[0], "Food");
-    EXPECT_EQ(m.Goods[1], "Cloth");
-
-    EXPECT_GT(m.Stats["Food_value"], 0.0f);
-    EXPECT_LT(m.Stats["Food_value"], 1e9f);
-    EXPECT_EQ(m.Stats["Food_Inflation"], 0);
-    EXPECT_EQ(m.Stats["Food_produced"], 0);
-    EXPECT_EQ(m.Stats["Food_consumed"], 0);
-    EXPECT_GT(m.Stats["Cloth_value"], 0.0f);
-    EXPECT_LT(m.Stats["Cloth_value"], 1e9f);
-    EXPECT_EQ(m.Stats["Cloth_Inflation"], 0);
-    EXPECT_EQ(m.Stats["Cloth_produced"], 0);
-    EXPECT_EQ(m.Stats["Cloth_consumed"], 0);
+    EXPECT_EQ(market.Pops, &pops);
+    EXPECT_EQ(market.Factories, &factories);
+    EXPECT_FLOAT_EQ(market.Stats["Food_value"], 100.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(market.Stats["Cloth_value"], 100.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(market.Stats["Food_consumed"], 0.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(market.Stats["Cloth_consumed"], 0.0f, 0.0001f);
 }
 
-TEST(Market_Constructor_PopsSet) {
-    vector<Pop> pops;
-    Pop p;
-    p.number = 42;
-    pops.push_back(p);
-    Market m(&pops);
-
-    EXPECT_EQ(m.Pops, &pops);
-    EXPECT_EQ(m.Pops->size(), static_cast<size_t>(1));
-    EXPECT_EQ(m.Pops->at(0).number, 42);
+TEST(single_argument_market_has_no_factory_book_and_update_is_a_noop) {
+    vector<Pop> pops{bidder(10, 100, 10)};
+    Market market(&pops);
+    market.Update();
+    EXPECT_EQ(market.Factories, nullptr);
+    EXPECT_FLOAT_EQ(pops[0].money, 100.0, 0.0001);
 }
 
-// ==================== Sender() - Food Market Clearing ====================
+TEST(food_market_fills_demand_when_supply_is_abundant) {
+    Factory factory = offer("Food", 20, 2, 10);
+    vector<Pop> pops{bidder(10, 100, 2)};
+    vector<Factory*> factories{&factory};
+    Market market(&pops, &factories);
 
-TEST(Sender_Food_SupplyExceedsDemand) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
+    market.ClearMarket("Food");
 
-    Pop a = make_pop(10, 1000, 0, 0, 50, 0, &f, &g);
-    Pop b = make_pop(5, 1000, 0, 0, 30, 0, &f, &g);
-    Pop c = make_pop(3, 1000, 0, 0, 20, 0, &f, &g);
-    pops.push_back(a);
-    pops.push_back(b);
-    pops.push_back(c);
-
-    Market m(&pops);
-    m.Stats["Food_produced"] = 30;
-
-    m.Sender();
-
-    EXPECT_GT(m.Stats["Food_value"], 0.0f);
-    EXPECT_LT(m.Stats["Food_value"], 1e9f);
-    EXPECT_EQ(m.Stats["Food_consumed"], 18);
-    EXPECT_GE(m.Pops->at(0).money, 0.0f);   // 500
-    EXPECT_GE(m.Pops->at(1).money, 0.0f);    // 850
-    EXPECT_GE(m.Pops->at(2).money, 0.0f);    // 940
-    EXPECT_EQ(m.Pops->at(0).Goods["Food"], 10);
-    EXPECT_EQ(m.Pops->at(1).Goods["Food"], 5);
-    EXPECT_EQ(m.Pops->at(2).Goods["Food"], 3);
+    EXPECT_FLOAT_EQ(pops[0].Goods["Food"], 10.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(factory.stock_sold, 10.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(pops[0].money, 80.0, 0.0001);
+    EXPECT_FLOAT_EQ(factory.cash, 30.0, 0.0001);
 }
 
-TEST(Sender_Food_SupplyLessThanDemand) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
+TEST(food_market_never_sells_more_than_available_supply) {
+    Factory factory = offer("Food", 4, 2);
+    vector<Pop> pops{bidder(10, 100, 2)};
+    vector<Factory*> factories{&factory};
+    Market market(&pops, &factories);
 
-    Pop a = make_pop(10, 1000, 0, 0, 50, 0, &f, &g);
-    Pop b = make_pop(5, 1000, 0, 0, 30, 0, &f, &g);
-    Pop c = make_pop(3, 1000, 0, 0, 20, 0, &f, &g);
-    pops.push_back(a);
-    pops.push_back(b);
-    pops.push_back(c);
-
-    Market m(&pops);
-    m.Stats["Food_produced"] = 12;
-
-    m.Sender();
-
-    EXPECT_GT(m.Stats["Food_value"], 0.0f);
-    EXPECT_LT(m.Stats["Food_value"], 1e9f);
-    EXPECT_EQ(m.Stats["Food_consumed"], 12);
-    EXPECT_EQ(m.Pops->at(0).Goods["Food"], 10);
-    EXPECT_EQ(m.Pops->at(1).Goods["Food"], 2);
-    EXPECT_EQ(m.Pops->at(2).Goods["Food"], 0);
-    EXPECT_GE(m.Pops->at(0).money, 0.0f);
-    EXPECT_GE(m.Pops->at(1).money, 0.0f);
-    EXPECT_GE(m.Pops->at(2).money, 0.0f);
+    market.ClearMarket("Food");
+    EXPECT_FLOAT_EQ(market.Stats["Food_consumed"], 4.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(factory.stock_sold, 4.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(pops[0].Goods["Food"], 4.0f, 0.0001f);
 }
 
-TEST(Sender_Food_NoSupply) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
+TEST(no_supply_leaves_money_goods_and_price_unchanged) {
+    Factory factory = offer("Food", 0, 2, 10);
+    vector<Pop> pops{bidder(10, 100, 2)};
+    vector<Factory*> factories{&factory};
+    Market market(&pops, &factories);
 
-    Pop a = make_pop(10, 1000, 0, 0, 50, 0, &f, &g);
-    pops.push_back(a);
-
-    Market m(&pops);
-    m.Stats["Food_produced"] = 0;
-
-    m.Sender();
-
-    EXPECT_EQ(m.Stats["Food_consumed"], 0);
-    EXPECT_EQ(m.Pops->at(0).Goods["Food"], 0);
-    EXPECT_GE(m.Pops->at(0).money, 0.0f);
+    market.ClearMarket("Food");
+    EXPECT_FLOAT_EQ(pops[0].money, 100.0, 0.0001);
+    EXPECT_FLOAT_EQ(pops[0].Goods["Food"], 0.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(factory.cash, 10.0, 0.0001);
+    EXPECT_FLOAT_EQ(market.Stats["Food_value"], 100.0f, 0.0001f);
 }
 
-TEST(Sender_Food_ZeroMoneyForFood) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
+TEST(bid_below_offer_price_does_not_trade) {
+    Factory factory = offer("Food", 10, 6);
+    vector<Pop> pops{bidder(10, 100, 5)};
+    vector<Factory*> factories{&factory};
+    Market market(&pops, &factories);
 
-    Pop a = make_pop(10, 1000, 0, 0, 0, 0, &f, &g);
-    Pop b = make_pop(5, 1000, 0, 0, 0, 0, &f, &g);
-    pops.push_back(a);
-    pops.push_back(b);
-
-    Market m(&pops);
-    m.Stats["Food_produced"] = 20;
-
-    m.Sender();
-
-    EXPECT_EQ(m.Stats["Food_consumed"], 0);
-    EXPECT_GT(m.Stats["Food_value"], 0.0f);
-    EXPECT_LT(m.Stats["Food_value"], 1e9f);
-    EXPECT_GE(m.Pops->at(0).money, 0.0f);
-    EXPECT_GE(m.Pops->at(1).money, 0.0f);
-    EXPECT_EQ(m.Pops->at(0).Goods["Food"], 0);
-    EXPECT_EQ(m.Pops->at(1).Goods["Food"], 0);
+    market.ClearMarket("Food");
+    EXPECT_FLOAT_EQ(market.Stats["Food_consumed"], 0.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(factory.stock_sold, 0.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(pops[0].money, 100.0, 0.0001);
 }
 
-TEST(Sender_Food_ExactSupplyEqualsDemand) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
+TEST(purchase_is_capped_by_buyer_affordability) {
+    Factory factory = offer("Food", 10, 3, 7);
+    vector<Pop> pops{bidder(10, 10, 3)};
+    vector<Factory*> factories{&factory};
+    Market market(&pops, &factories);
+    double before = monetary_total(pops, factories);
 
-    Pop a = make_pop(10, 1000, 0, 0, 50, 0, &f, &g);
-    Pop b = make_pop(5, 1000, 0, 0, 30, 0, &f, &g);
-    Pop c = make_pop(3, 1000, 0, 0, 20, 0, &f, &g);
-    pops.push_back(a);
-    pops.push_back(b);
-    pops.push_back(c);
+    market.ClearMarket("Food");
 
-    Market m(&pops);
-    m.Stats["Food_produced"] = 18;
-
-    m.Sender();
-
-    EXPECT_GT(m.Stats["Food_value"], 0.0f);
-    EXPECT_LT(m.Stats["Food_value"], 1e9f);
-    EXPECT_EQ(m.Stats["Food_consumed"], 18);
-    EXPECT_EQ(m.Pops->at(0).Goods["Food"], 10);
-    EXPECT_EQ(m.Pops->at(1).Goods["Food"], 5);
-    EXPECT_EQ(m.Pops->at(2).Goods["Food"], 3);
-    EXPECT_GE(m.Pops->at(0).money, 0.0f);
-    EXPECT_GE(m.Pops->at(1).money, 0.0f);
-    EXPECT_GE(m.Pops->at(2).money, 0.0f);
+    EXPECT_FLOAT_EQ(pops[0].Goods["Food"], 10.0f / 3.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(pops[0].money, 0.0, 0.0001);
+    EXPECT_GE(pops[0].money, -0.0001);
+    EXPECT_FLOAT_EQ(monetary_total(pops, factories), before, 0.0001);
 }
 
-TEST(Sender_Food_SinglePopMarginalFill) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
+TEST(highest_bidder_receives_scarce_supply_first) {
+    Factory factory = offer("Food", 5, 4);
+    vector<Pop> pops{bidder(5, 100, 4), bidder(5, 100, 8)};
+    vector<Factory*> factories{&factory};
+    Market market(&pops, &factories);
 
-    Pop a = make_pop(10, 1000, 0, 0, 50, 0, &f, &g);
-    pops.push_back(a);
+    market.ClearMarket("Food");
 
-    Market m(&pops);
-    m.Stats["Food_produced"] = 3;
-
-    m.Sender();
-
-    EXPECT_EQ(m.Stats["Food_consumed"], 3);
-    EXPECT_GT(m.Stats["Food_value"], 0.0f);
-    EXPECT_LT(m.Stats["Food_value"], 1e9f);
-    EXPECT_EQ(m.Pops->at(0).Goods["Food"], 3);
-    EXPECT_GE(m.Pops->at(0).money, 0.0f);
+    EXPECT_FLOAT_EQ(pops[1].Goods["Food"], 5.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(pops[0].Goods["Food"], 0.0f, 0.0001f);
 }
 
-TEST(Sender_Food_FoodConsumedAccumulates) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
+TEST(cheapest_factory_is_used_before_expensive_factory) {
+    Factory expensive = offer("Food", 10, 5);
+    Factory cheap = offer("Food", 4, 2);
+    vector<Pop> pops{bidder(10, 100, 5)};
+    vector<Factory*> factories{&expensive, &cheap};
+    Market market(&pops, &factories);
 
-    Pop a = make_pop(10, 1000, 0, 0, 50, 0, &f, &g);
-    pops.push_back(a);
+    market.ClearMarket("Food");
 
-    Market m(&pops);
-    m.Stats["Food_produced"] = 5;
-
-    m.Sender();
-    EXPECT_EQ(m.Stats["Food_consumed"], 5);
-
-    m.Sender();
-    EXPECT_EQ(m.Stats["Food_consumed"], 10);
+    EXPECT_FLOAT_EQ(cheap.stock_sold, 4.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(expensive.stock_sold, 6.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(market.Stats["Food_value"], 3.8f, 0.0001f);
 }
 
-TEST(Sender_Food_InflationCalculation) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
+TEST(market_sale_is_an_exact_transfer_between_buyer_and_factory) {
+    Factory factory = offer("Food", 10, 7, 30);
+    vector<Pop> pops{bidder(10, 100, 7)};
+    vector<Factory*> factories{&factory};
+    Market market(&pops, &factories);
+    double before = monetary_total(pops, factories);
 
-    Pop a = make_pop(10, 2000, 0, 0, 50, 0, &f, &g);
-    Pop b = make_pop(5, 2000, 0, 0, 30, 0, &f, &g);
-    pops.push_back(a);
-    pops.push_back(b);
+    market.ClearMarket("Food");
 
-    Market m(&pops);
-    m.Stats["Food_produced"] = 20;
-
-    float old_value = m.Stats["Food_value"];
-    m.Sender();
-
-    float new_value = m.Stats["Food_value"];
-    float expected_inflation = (new_value / old_value) - 1;
-    EXPECT_EQ(m.Stats["Food_Inflation"], expected_inflation);
+    EXPECT_FLOAT_EQ(factory.money_gained, 70.0, 0.0001);
+    EXPECT_FLOAT_EQ(monetary_total(pops, factories), before, 0.0001);
 }
 
-TEST(Sender_Food_MultipleBiddersTied) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
+TEST(cloth_market_uses_cloth_deficit_not_food_demand) {
+    Factory factory = offer("Cloth", 20, 3);
+    Pop pop = bidder(120, 100, 0, 3);
+    pop.Goods["Cloth"] = 4;
+    vector<Pop> pops{pop};
+    vector<Factory*> factories{&factory};
+    Market market(&pops, &factories);
 
-    Pop a = make_pop(5, 1000, 0, 0, 40, 0, &f, &g);
-    Pop b = make_pop(5, 1000, 0, 0, 40, 0, &f, &g);
-    pops.push_back(a);
-    pops.push_back(b);
+    market.ClearMarket("Cloth");
 
-    Market m(&pops);
-    m.Stats["Food_produced"] = 7;
-
-    m.Sender();
-
-    EXPECT_EQ(m.Stats["Food_consumed"], 7);
-    EXPECT_GT(m.Stats["Food_value"], 0.0f);
-    EXPECT_LT(m.Stats["Food_value"], 1e9f);
+    EXPECT_FLOAT_EQ(market.Stats["Cloth_consumed"], 6.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(pops[0].Goods["Cloth"], 10.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(market.Stats["Food_consumed"], 0.0f, 0.0001f);
 }
 
-// ==================== Sender_cloth() - Cloth Market Clearing ====================
+TEST(satisfied_cloth_demand_does_not_trade) {
+    Factory factory = offer("Cloth", 20, 3);
+    Pop pop = bidder(120, 100, 0, 3);
+    pop.Goods["Cloth"] = 10;
+    vector<Pop> pops{pop};
+    vector<Factory*> factories{&factory};
+    Market market(&pops, &factories);
 
-TEST(Sender_Cloth_SupplyExceedsDemand) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
-
-    Pop a = make_pop(24, 1000, 0, 0, 0, 50, &f, &g);
-    Pop b = make_pop(12, 1000, 0, 0, 0, 30, &f, &g);
-    Pop c = make_pop(12, 1000, 0, 0, 0, 20, &f, &g);
-    pops.push_back(a);
-    pops.push_back(b);
-    pops.push_back(c);
-
-    Market m(&pops);
-    m.Stats["Cloth_produced"] = 10;
-
-    m.Sender_cloth();
-
-    EXPECT_GT(m.Stats["Cloth_value"], 0.0f);
-    EXPECT_LT(m.Stats["Cloth_value"], 1e9f);
-    EXPECT_TRUE(m.Stats["Cloth_consumed"] > 0);
-    EXPECT_EQ(m.Pops->at(0).Goods["Cloth"], 2);
-    EXPECT_EQ(m.Pops->at(1).Goods["Cloth"], 1);
-    EXPECT_EQ(m.Pops->at(2).Goods["Cloth"], 1);
-    EXPECT_GE(m.Pops->at(0).money, 0.0f);
-    EXPECT_GE(m.Pops->at(1).money, 0.0f);
-    EXPECT_GE(m.Pops->at(2).money, 0.0f);
+    market.ClearMarket("Cloth");
+    EXPECT_FLOAT_EQ(factory.stock_sold, 0.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(pops[0].money, 100.0, 0.0001);
 }
 
-TEST(Sender_Cloth_SupplyLessThanDemand) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
+TEST(update_clears_food_and_cloth_and_resets_period_revenue) {
+    Factory food = offer("Food", 10, 2);
+    Factory cloth = offer("Cloth", 10, 4);
+    food.money_gained = 999;
+    cloth.money_gained = 999;
+    vector<Pop> pops{bidder(12, 200, 4, 4)};
+    vector<Factory*> factories{&food, &cloth};
+    Market market(&pops, &factories);
 
-    Pop a = make_pop(24, 1000, 0, 0, 0, 50, &f, &g);
-    Pop b = make_pop(12, 1000, 0, 0, 0, 30, &f, &g);
-    Pop c = make_pop(12, 1000, 0, 0, 0, 20, &f, &g);
-    pops.push_back(a);
-    pops.push_back(b);
-    pops.push_back(c);
+    market.Update();
 
-    Market m(&pops);
-    m.Stats["Cloth_produced"] = 2;
-
-    m.Sender_cloth();
-
-    EXPECT_GT(m.Stats["Cloth_value"], 0.0f);
-    EXPECT_LT(m.Stats["Cloth_value"], 1e9f);
-    EXPECT_EQ(m.Stats["Cloth_consumed"], 2);
-    EXPECT_EQ(m.Pops->at(0).Goods["Cloth"], 2);
-    EXPECT_EQ(m.Pops->at(1).Goods["Cloth"], 0);
-    EXPECT_EQ(m.Pops->at(2).Goods["Cloth"], 0);
-    EXPECT_GE(m.Pops->at(0).money, 0.0f);
-    EXPECT_GE(m.Pops->at(1).money, 0.0f);
-    EXPECT_GE(m.Pops->at(2).money, 0.0f);
+    EXPECT_FLOAT_EQ(food.money_gained, 20.0, 0.0001);
+    EXPECT_FLOAT_EQ(cloth.money_gained, 4.0, 0.0001);
+    EXPECT_FLOAT_EQ(market.Stats["Food_consumed"], 10.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(market.Stats["Cloth_consumed"], 1.0f, 0.0001f);
 }
 
-TEST(Sender_Cloth_NoSupply) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
+TEST(transaction_price_and_inflation_are_volume_weighted) {
+    Factory cheap = offer("Food", 2, 5);
+    Factory costly = offer("Food", 2, 15);
+    vector<Pop> pops{bidder(4, 100, 15)};
+    vector<Factory*> factories{&costly, &cheap};
+    Market market(&pops, &factories);
+    market.Stats["Food_value"] = 20;
 
-    Pop a = make_pop(24, 1000, 0, 0, 0, 50, &f, &g);
-    pops.push_back(a);
+    market.ClearMarket("Food");
 
-    Market m(&pops);
-    m.Stats["Cloth_produced"] = 0;
-
-    m.Sender_cloth();
-
-    EXPECT_EQ(m.Stats["Cloth_consumed"], 0);
-    EXPECT_EQ(m.Pops->at(0).Goods["Cloth"], 0);
-    EXPECT_GE(m.Pops->at(0).money, 0.0f);
+    EXPECT_FLOAT_EQ(market.Stats["Food_value"], 10.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(market.Stats["Food_Inflation"], -0.5f, 0.0001f);
 }
 
-TEST(Sender_Cloth_ZeroMoneyForCloth) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
+TEST(consumption_statistics_accumulate_until_the_caller_resets_them) {
+    Factory factory = offer("Food", 3, 1);
+    vector<Pop> pops{bidder(3, 100, 1)};
+    vector<Factory*> factories{&factory};
+    Market market(&pops, &factories);
 
-    Pop a = make_pop(24, 1000, 0, 0, 0, 0, &f, &g);
-    Pop b = make_pop(12, 1000, 0, 0, 0, 0, &f, &g);
-    pops.push_back(a);
-    pops.push_back(b);
+    market.ClearMarket("Food");
+    factory.production = 3;
+    factory.stock_sold = 0;
+    pops[0].Goods["Food"] = 0;
+    market.ClearMarket("Food");
 
-    Market m(&pops);
-    m.Stats["Cloth_produced"] = 10;
-
-    m.Sender_cloth();
-
-    EXPECT_EQ(m.Stats["Cloth_consumed"], 0);
-    EXPECT_GT(m.Stats["Cloth_value"], 0.0f);
-    EXPECT_LT(m.Stats["Cloth_value"], 1e9f);
-    EXPECT_GE(m.Pops->at(0).money, 0.0f);
-    EXPECT_GE(m.Pops->at(1).money, 0.0f);
-    EXPECT_EQ(m.Pops->at(0).Goods["Cloth"], 0);
-    EXPECT_EQ(m.Pops->at(1).Goods["Cloth"], 0);
+    EXPECT_FLOAT_EQ(market.Stats["Food_consumed"], 6.0f, 0.0001f);
 }
 
-TEST(Sender_Cloth_AlreadySatisfiedDemandZero) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
+TEST(zero_price_goods_transfer_without_changing_money) {
+    Factory factory = offer("Food", 7, 0, 10);
+    vector<Pop> pops{bidder(10, 0, 1)};
+    vector<Factory*> factories{&factory};
+    Market market(&pops, &factories);
 
-    Pop a = make_pop(12, 1000, 0, 2, 0, 30, &f, &g);
-    pops.push_back(a);
+    market.ClearMarket("Food");
 
-    Market m(&pops);
-    m.Stats["Cloth_produced"] = 5;
-
-    m.Sender_cloth();
-
-    EXPECT_EQ(m.Stats["Cloth_consumed"], 0);
-    EXPECT_EQ(m.Pops->at(0).Goods["Cloth"], 2);
-    EXPECT_GE(m.Pops->at(0).money, 0.0f);
+    EXPECT_FLOAT_EQ(factory.stock_sold, 7.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(pops[0].money, 0.0, 0.0001);
+    EXPECT_FLOAT_EQ(factory.cash, 10.0, 0.0001);
 }
 
-TEST(Sender_Cloth_PartialSatisfaction) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
+TEST(extinct_population_has_zero_market_demand) {
+    Factory factory = offer("Food", 10, 1);
+    vector<Pop> pops{bidder(0, 100, 10, 10)};
+    vector<Factory*> factories{&factory};
+    Market market(&pops, &factories);
 
-    Pop a = make_pop(36, 1000, 0, 1, 0, 50, &f, &g);
-    pops.push_back(a);
+    market.Update();
 
-    Market m(&pops);
-    m.Stats["Cloth_produced"] = 10;
-
-    m.Sender_cloth();
-
-    EXPECT_GT(m.Stats["Cloth_value"], 0.0f);
-    EXPECT_LT(m.Stats["Cloth_value"], 1e9f);
-    EXPECT_TRUE(m.Stats["Cloth_consumed"] > 0);
+    EXPECT_FLOAT_EQ(factory.stock_sold, 0.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(pops[0].money, 100.0, 0.0001);
 }
 
-// ==================== value_change() Tests ====================
-
-TEST(ValueChange_Food_ProducedExceedsConsumed) {
-    vector<Pop> pops;
-    Market m(&pops);
-    m.Stats["Food_value"] = 100;
-    m.Stats["Food_produced"] = 20;
-    m.Stats["Food_consumed"] = 10;
-
-    float old_value = m.Stats["Food_value"];
-    m.value_change();
-
-    float rect = 10.0f / 20.0f - 1.0f;
-    float expected = old_value + rect * log(old_value);
-    EXPECT_GT(m.Stats["Food_value"], 0.0f);
-    EXPECT_LT(m.Stats["Food_value"], 1e9f);
-}
-
-TEST(ValueChange_Cloth_ProducedExceedsConsumed) {
-    vector<Pop> pops;
-    Market m(&pops);
-    m.Stats["Cloth_value"] = 50;
-    m.Stats["Cloth_produced"] = 30;
-    m.Stats["Cloth_consumed"] = 15;
-
-    float old_value = m.Stats["Cloth_value"];
-    m.value_change();
-
-    float rect = 15.0f / 30.0f - 1.0f;
-    float expected = old_value + rect * log(old_value);
-    EXPECT_GT(m.Stats["Cloth_value"], 0.0f);
-    EXPECT_LT(m.Stats["Cloth_value"], 1e9f);
-}
-
-TEST(ValueChange_Food_ProducedLessThanConsumed) {
-    vector<Pop> pops;
-    Market m(&pops);
-    m.Stats["Food_value"] = 100;
-    m.Stats["Food_produced"] = 10;
-    m.Stats["Food_consumed"] = 20;
-
-    float old_value = m.Stats["Food_value"];
-    m.value_change();
-
-    float rect = (1.0f - 1.0f / (10.0f / 20.0f)) / 5.0f;
-    float expected = old_value * (1.0f - rect);
-    EXPECT_GT(m.Stats["Food_value"], 0.0f);
-    EXPECT_LT(m.Stats["Food_value"], 1e9f);
-}
-
-TEST(ValueChange_Cloth_ProducedLessThanConsumed) {
-    vector<Pop> pops;
-    Market m(&pops);
-    m.Stats["Cloth_value"] = 200;
-    m.Stats["Cloth_produced"] = 5;
-    m.Stats["Cloth_consumed"] = 25;
-
-    float old_value = m.Stats["Cloth_value"];
-    m.value_change();
-
-    float rect = (1.0f - 1.0f / (5.0f / 25.0f)) / 5.0f;
-    float expected = old_value * (1.0f - rect);
-    EXPECT_GT(m.Stats["Cloth_value"], 0.0f);
-    EXPECT_LT(m.Stats["Cloth_value"], 1e9f);
-}
-
-TEST(ValueChange_Food_ProducedEqualsConsumed) {
-    vector<Pop> pops;
-    Market m(&pops);
-    m.Stats["Food_value"] = 100;
-    m.Stats["Food_produced"] = 15;
-    m.Stats["Food_consumed"] = 15;
-    m.Stats["Cloth_value"] = 100;
-    m.Stats["Cloth_produced"] = 0;
-    m.Stats["Cloth_consumed"] = 0;
-
-    m.value_change();
-
-    EXPECT_GT(m.Stats["Food_value"], 0.0f);
-    EXPECT_LT(m.Stats["Food_value"], 1e9f);
-}
-
-TEST(ValueChange_Cloth_ProducedEqualsConsumed) {
-    vector<Pop> pops;
-    Market m(&pops);
-    m.Stats["Food_value"] = 100;
-    m.Stats["Food_produced"] = 0;
-    m.Stats["Food_consumed"] = 0;
-    m.Stats["Cloth_value"] = 200;
-    m.Stats["Cloth_produced"] = 5;
-    m.Stats["Cloth_consumed"] = 5;
-
-    m.value_change();
-
-    EXPECT_GT(m.Stats["Cloth_value"], 0.0f);
-    EXPECT_LT(m.Stats["Cloth_value"], 1e9f);
-}
-
-TEST(ValueChange_ZeroProducedZeroConsumed) {
-    vector<Pop> pops;
-    Market m(&pops);
-    m.Stats["Food_value"] = 100;
-    m.Stats["Food_produced"] = 0;
-    m.Stats["Food_consumed"] = 0;
-    m.Stats["Cloth_value"] = 200;
-    m.Stats["Cloth_produced"] = 0;
-    m.Stats["Cloth_consumed"] = 0;
-
-    m.value_change();
-
-    EXPECT_TRUE(!std::isnan(m.Stats["Food_value"]));
-    EXPECT_TRUE(!std::isnan(m.Stats["Cloth_value"]));
-}
-
-TEST(ValueChange_LargeRatio) {
-    vector<Pop> pops;
-    Market m(&pops);
-    m.Stats["Food_value"] = 100;
-    m.Stats["Food_produced"] = 1000;
-    m.Stats["Food_consumed"] = 1;
-
-    float old_value = m.Stats["Food_value"];
-    m.value_change();
-
-    float rect = 1.0f / 1000.0f - 1.0f;
-    float expected = old_value + rect * log(old_value);
-    EXPECT_GT(m.Stats["Food_value"], 0.0f);
-    EXPECT_LT(m.Stats["Food_value"], 1e9f);
-    EXPECT_GT(m.Stats["Food_value"], 0);
-}
-
-// ==================== Sort_Vector Tests ====================
-
-TEST(SortVector_DescendingOrder) {
-    vector<vector<float>> matrix = {
-        {0, 10, 100},
-        {1, 50, 200},
-        {2, 30, 300},
-        {3, 60, 400},
-        {4, 20, 500}
-    };
-
-    auto result = SortBids(matrix, 1);
-
-    EXPECT_EQ(result.size(), static_cast<size_t>(5));
-    EXPECT_EQ(result[0][1], 60);
-    EXPECT_EQ(result[1][1], 50);
-    EXPECT_EQ(result[2][1], 30);
-    EXPECT_EQ(result[3][1], 20);
-    EXPECT_EQ(result[4][1], 10);
-}
-
-TEST(SortVector_PreservesDataIntegrity) {
-    vector<vector<float>> matrix = {
-        {0, 50, 100},
-        {1, 10, 200},
-        {2, 30, 300}
-    };
-
-    auto result = SortBids(matrix, 1);
-
-    EXPECT_EQ(result[0][0], 0);
-    EXPECT_EQ(result[0][2], 100);
-    EXPECT_EQ(result[1][0], 2);
-    EXPECT_EQ(result[1][2], 300);
-    EXPECT_EQ(result[2][0], 1);
-    EXPECT_EQ(result[2][2], 200);
-}
-
-TEST(SortVector_EmptyVector) {
-    vector<vector<float>> matrix;
-
-    auto result = SortBids(matrix, 0);
-
-    EXPECT_TRUE(result.empty());
-}
-
-TEST(SortVector_SingleElement) {
-    vector<vector<float>> matrix = {{7, 42, 99}};
-
-    auto result = SortBids(matrix, 1);
-
-    EXPECT_EQ(result.size(), static_cast<size_t>(1));
-    EXPECT_EQ(result[0][0], 7);
-    EXPECT_EQ(result[0][1], 42);
-    EXPECT_EQ(result[0][2], 99);
-}
-
-TEST(SortVector_AlreadySorted) {
-    vector<vector<float>> matrix = {
-        {0, 100, 0},
-        {1, 80, 0},
-        {2, 50, 0},
-        {3, 20, 0}
-    };
-
-    auto result = SortBids(matrix, 1);
-
-    EXPECT_EQ(result.size(), matrix.size());
-    EXPECT_EQ(result[0][1], 100);
-    EXPECT_EQ(result[1][1], 80);
-    EXPECT_EQ(result[2][1], 50);
-    EXPECT_EQ(result[3][1], 20);
-}
-
-TEST(SortVector_ReverseSorted) {
-    vector<vector<float>> matrix = {
-        {0, 5, 10},
-        {1, 15, 20},
-        {2, 25, 30},
-        {3, 35, 40}
-    };
-
-    auto result = SortBids(matrix, 1);
-
-    EXPECT_EQ(result[0][1], 35);
-    EXPECT_EQ(result[1][1], 25);
-    EXPECT_EQ(result[2][1], 15);
-    EXPECT_EQ(result[3][1], 5);
-}
-
-TEST(SortVector_SortByColumn0) {
-    vector<vector<float>> matrix = {
-        {3, 10, 100},
-        {1, 20, 200},
-        {4, 30, 300},
-        {2, 40, 400}
-    };
-
-    auto result = SortBids(matrix, 0);
-
-    EXPECT_EQ(result[0][0], 4);
-    EXPECT_EQ(result[1][0], 3);
-    EXPECT_EQ(result[2][0], 2);
-    EXPECT_EQ(result[3][0], 1);
-}
-
-TEST(SortVector_SortByColumn2) {
-    vector<vector<float>> matrix = {
-        {0, 0, 300},
-        {1, 0, 100},
-        {2, 0, 500},
-        {3, 0, 200}
-    };
-
-    auto result = SortBids(matrix, 2);
-
-    EXPECT_EQ(result[0][2], 500);
-    EXPECT_EQ(result[1][2], 300);
-    EXPECT_EQ(result[2][2], 200);
-    EXPECT_EQ(result[3][2], 100);
-}
-
-TEST(SortVector_EqualValues) {
-    vector<vector<float>> matrix = {
-        {0, 30, 100},
-        {1, 30, 200},
-        {2, 30, 300}
-    };
-
-    auto result = SortBids(matrix, 1);
-
-    EXPECT_EQ(result.size(), static_cast<size_t>(3));
-    for (auto& row : result) {
-        EXPECT_EQ(row[1], 30);
-    }
-}
-
-TEST(SortVector_PartialSort) {
-    vector<vector<float>> matrix = {
-        {0, 10, 0},
-        {1, 50, 0},
-        {2, 30, 0},
-        {3, 60, 0},
-        {4, 20, 0}
-    };
-
-    auto result = SortBids(matrix, 1, 3);
-
-    EXPECT_EQ(result[0][1], 50);
-    EXPECT_EQ(result[1][1], 30);
-    EXPECT_EQ(result[2][1], 10);
-    EXPECT_EQ(result[3][1], 60);
-    EXPECT_EQ(result[4][1], 20);
-}
-
-// ==================== Edge Case Tests ====================
-
-TEST(EdgeCase_EmptyPops) {
-    vector<Pop> pops;
-    Market m(&pops);
-
-    m.Stats["Food_produced"] = 10;
-    m.Stats["Cloth_produced"] = 10;
-
-    m.Sender();
-    m.Sender_cloth();
-
-    EXPECT_EQ(m.Stats["Food_consumed"], 0);
-    EXPECT_EQ(m.Stats["Cloth_consumed"], 0);
-    EXPECT_GT(m.Stats["Food_value"], 0.0f);
-    EXPECT_LT(m.Stats["Food_value"], 1e9f);
-    EXPECT_GT(m.Stats["Cloth_value"], 0.0f);
-    EXPECT_LT(m.Stats["Cloth_value"], 1e9f);
-}
-
-TEST(EdgeCase_AllPopsZeroMoneyForFood) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
-
-    Pop a = make_pop(10, 500, 0, 0, 0, 0, &f, &g);
-    Pop b = make_pop(5, 500, 0, 0, 0, 0, &f, &g);
-    Pop c = make_pop(3, 500, 0, 0, 0, 0, &f, &g);
-    pops.push_back(a);
-    pops.push_back(b);
-    pops.push_back(c);
-
-    Market m(&pops);
-    m.Stats["Food_produced"] = 20;
-
-    m.Sender();
-
-    EXPECT_EQ(m.Stats["Food_consumed"], 0);
-    EXPECT_GT(m.Stats["Food_value"], 0.0f);
-    EXPECT_LT(m.Stats["Food_value"], 1e9f);
-}
-
-TEST(EdgeCase_VeryLargeSupply) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
-
-    Pop a = make_pop(10, 1000, 0, 0, 50, 0, &f, &g);
-    pops.push_back(a);
-
-    Market m(&pops);
-    m.Stats["Food_produced"] = 100;
-
-    m.Sender();
-
-    EXPECT_EQ(m.Stats["Food_consumed"], 10);
-    EXPECT_GT(m.Stats["Food_value"], 0.0f);
-    EXPECT_LT(m.Stats["Food_value"], 1e9f);
-    EXPECT_EQ(m.Pops->at(0).Goods["Food"], 10);
-}
-
-TEST(EdgeCase_ClothDemandZero) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
-
-    Pop a = make_pop(12, 1000, 0, 2, 0, 30, &f, &g);
-    Pop b = make_pop(12, 1000, 0, 2, 0, 20, &f, &g);
-    pops.push_back(a);
-    pops.push_back(b);
-
-    Market m(&pops);
-    m.Stats["Cloth_produced"] = 0;
-    m.Stats["Cloth_consumed"] = 0;
-
-    m.Sender_cloth();
-    m.value_change();
-
-    EXPECT_TRUE(!std::isnan(m.Stats["Cloth_value"]));
-}
-
-TEST(EdgeCase_ConsecutiveUpdatesMaintainState) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
-
-    Pop a = make_pop(10, 3000, 0, 0, 50, 0, &f, &g);
-    pops.push_back(a);
-
-    Market m(&pops);
-
-    m.Stats["Food_produced"] = 10;
-    m.Sender();
-    EXPECT_EQ(m.Stats["Food_consumed"], 10);
-    EXPECT_GT(m.Stats["Food_value"], 0.0f);
-    EXPECT_LT(m.Stats["Food_value"], 1e9f);
-    EXPECT_EQ(m.Pops->at(0).Goods["Food"], 10);
-    EXPECT_GE(m.Pops->at(0).money, 0.0f);
-
-    m.Stats["Food_produced"] = 10;
-    m.Sender();
-    EXPECT_EQ(m.Stats["Food_consumed"], 20);
-    EXPECT_GT(m.Stats["Food_value"], 0.0f);
-    EXPECT_LT(m.Stats["Food_value"], 1e9f);
-    EXPECT_EQ(m.Pops->at(0).Goods["Food"], 20);
-    EXPECT_GE(m.Pops->at(0).money, 0.0f);
-}
-
-TEST(EdgeCase_SinglePopGetsAllFoodExact) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
-
-    Pop a = make_pop(7, 1000, 0, 0, 40, 0, &f, &g);
-    pops.push_back(a);
-
-    Market m(&pops);
-    m.Stats["Food_produced"] = 7;
-
-    m.Sender();
-
-    EXPECT_EQ(m.Stats["Food_consumed"], 7);
-    EXPECT_EQ(m.Pops->at(0).Goods["Food"], 7);
-    EXPECT_GE(m.Pops->at(0).money, 0.0f);
-    EXPECT_GT(m.Stats["Food_value"], 0.0f);
-    EXPECT_LT(m.Stats["Food_value"], 1e9f);
-}
-
-TEST(EdgeCase_FoodProducedFloatTruncation) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
-
-    Pop a = make_pop(10, 1000, 0, 0, 50, 0, &f, &g);
-    pops.push_back(a);
-
-    Market m(&pops);
-    m.Stats["Food_produced"] = 10.9f;
-
-    m.Sender();
-
-    EXPECT_EQ(m.Stats["Food_consumed"], 10);
-}
-
-TEST(EdgeCase_ClothProducedFloatTruncation) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
-
-    Pop a = make_pop(24, 1000, 0, 0, 0, 50, &f, &g);
-    pops.push_back(a);
-
-    Market m(&pops);
-    m.Stats["Cloth_produced"] = 1.9f;
-
-    m.Sender_cloth();
-
-    EXPECT_EQ(m.Stats["Cloth_consumed"], 1);
-    EXPECT_EQ(m.Pops->at(0).Goods["Cloth"], 1);
-}
-
-TEST(EdgeCase_ManyPopsOneBidderWins) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
-
-    Pop a = make_pop(2, 1000, 0, 0, 10, 0, &f, &g);
-    Pop b = make_pop(3, 1000, 0, 0, 90, 0, &f, &g);
-    Pop c = make_pop(2, 1000, 0, 0, 30, 0, &f, &g);
-    Pop d = make_pop(5, 1000, 0, 0, 50, 0, &f, &g);
-    pops.push_back(a);
-    pops.push_back(b);
-    pops.push_back(c);
-    pops.push_back(d);
-
-    Market m(&pops);
-    m.Stats["Food_produced"] = 6;
-
-    m.Sender();
-
-    EXPECT_GT(m.Stats["Food_value"], 0.0f);
-    EXPECT_LT(m.Stats["Food_value"], 1e9f);
-    EXPECT_EQ(m.Stats["Food_consumed"], 6);
-    EXPECT_EQ(m.Pops->at(1).Goods["Food"], 3);
-    EXPECT_EQ(m.Pops->at(3).Goods["Food"], 3);
-    EXPECT_EQ(m.Pops->at(2).Goods["Food"], 0);
-    EXPECT_EQ(m.Pops->at(0).Goods["Food"], 0);
-}
-
-TEST(EdgeCase_UpdateMethodCallsAllThree) {
-    Factory f = make_factory();
-    Government g = make_gov();
-    vector<Pop> pops;
-
-    Pop a = make_pop(10, 2000, 0, 0, 50, 0, &f, &g);
-    Pop b = make_pop(5, 2000, 0, 0, 30, 0, &f, &g);
-    Pop c = make_pop(24, 2000, 0, 0, 0, 40, &f, &g);
-    Pop d = make_pop(12, 2000, 0, 0, 0, 20, &f, &g);
-    pops.push_back(a);
-    pops.push_back(b);
-    pops.push_back(c);
-    pops.push_back(d);
-
-    Market m(&pops);
-    m.Stats["Food_produced"] = 20;
-    m.Stats["Cloth_produced"] = 5;
-
-    float old_food = m.Stats["Food_value"];
-    float old_cloth = m.Stats["Cloth_value"];
-
-    m.Update();
-
-    EXPECT_TRUE(m.Stats["Food_consumed"] > 0);
-    EXPECT_TRUE(m.Stats["Cloth_consumed"] > 0);
-    EXPECT_TRUE(m.Stats["Food_value"] != old_food
-                || m.Stats["Cloth_value"] != old_cloth);
+TEST(sort_bids_orders_requested_column_descending) {
+    vector<vector<float>> bids{{0, 2, 9}, {1, 8, 3}, {2, 5, 6}};
+    SortBids(bids, 1);
+    EXPECT_FLOAT_EQ(bids[0][1], 8.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(bids[1][1], 5.0f, 0.0001f);
+    EXPECT_FLOAT_EQ(bids[2][1], 2.0f, 0.0001f);
 }
 
 int main() {

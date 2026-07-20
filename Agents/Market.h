@@ -19,6 +19,7 @@ class Factory;
 class Market {
 public:
     vector<vector<float>> food_market;
+    vector<float> food_bought;
     std::vector<Pop>* Pops;
     std::vector<Factory*>* Factories;  // needed for posted-price clearing
     std::vector<string> Goods {"Food", "Cloth"};
@@ -48,6 +49,9 @@ public:
     void ClearMarket(string good_type);   // new posted-price clearing
 
     void Update(){
+        if (Pops == nullptr || Factories == nullptr) return;
+        food_bought.assign(Pops->size(), 0.0f);
+        for (Factory* fac : *Factories) fac->money_gained = 0;
         Market::ClearMarket("Food");
         Market::ClearMarket("Cloth");
     }

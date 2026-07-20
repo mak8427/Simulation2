@@ -15,6 +15,8 @@
 #include "Pop.h"
 #include "Market.h"
 #include <vector>
+#include <array>
+#include <algorithm>
 #include <iostream>
 #include <stdio.h>
 
@@ -30,23 +32,27 @@ void Market::Sender_cloth(){}
 // 2. For each pop (sorted by Money_for_X, highest first), buy from cheapest factory.
 // 3. Market Stats["_value"] = volume-weighted average transaction price.
 void Market::ClearMarket(string good_type){
+    if (Pops == nullptr || Factories == nullptr) return;
     float pre_good = Stats[good_type + "_value"];
-    float total_revenue = 0;
+    double total_revenue = 0;
     float total_consumed = 0;
     string bid_key = (good_type == "Food") ? "Money_for_Food" : "Money_for_Cloth";
 
     // Collect bids
-    vector<vector<float>> bids;
+    vector<array<float,3>> bids;
+    bids.reserve(Pops->size());
     for (int i = 0; i < Pops->size(); i++) {
         float demand = (good_type == "Food")
             ? Pops->at(i).food_consumed()
             : Pops->at(i).cloth_used();
         bids.push_back({float(i), Pops->at(i).Consumption[bid_key], demand});
     }
-    SortBids(bids, 1);  // sort by bid descending
+    std::sort(bids.begin(), bids.end(),
+        [](const array<float,3>& a, const array<float,3>& b) { return a[1] > b[1]; });
 
     // Collect factory offers: {factory_idx, price, remaining_stock}
-    vector<vector<float>> offers;
+    vector<array<float,3>> offers;
+    offers.reserve(Factories->size());
     for (int f = 0; f < Factories->size(); f++) {
         Factory* fac = (*Factories)[f];
         if (fac->type != good_type) continue;
@@ -54,14 +60,8 @@ void Market::ClearMarket(string good_type){
         if (stock <= 0) continue;
         offers.push_back({float(f), fac->my_price, float(stock)});
     }
-    // Sort factories by price ascending (cheapest first)
-    for (int i = 0; i < offers.size(); i++) {
-        int best = i;
-        for (int j = i + 1; j < offers.size(); j++) {
-            if (offers[j][1] < offers[best][1]) best = j;
-        }
-        if (best != i) swap(offers[i], offers[best]);
-    }
+    std::sort(offers.begin(), offers.end(),
+        [](const array<float,3>& a, const array<float,3>& b) { return a[1] < b[1]; });
 
     // Match: highest-bidding pops buy from cheapest factory first
     for (int b = 0; b < bids.size(); b++) {
@@ -74,23 +74,30 @@ void Market::ClearMarket(string good_type){
             if (offers[f][2] <= 0) continue;
             float price = offers[f][1];
             if (price > bid) continue;  // don't buy above willingness-to-pay
-            float bought = std::min(demand, offers[f][2]);
+            float affordable = (price > 0)
+                ? static_cast<float>(Pops->at(pop_idx).money / price)
+                : demand;
+            if (affordable <= 0) break;
+            float bought = std::min(std::min(demand, offers[f][2]), affordable);
 
-            Pops->at(pop_idx).money -= price * bought;
-            total_revenue += price * bought;
+            double payment = double(price) * bought;
+            Pops->at(pop_idx).money -= payment;
+            total_revenue += payment;
             total_consumed += bought;
             offers[f][2] -= bought;
             demand -= bought;
 
             Factory* fac = (*Factories)[offers[f][0]];
-            fac->money_gained += price * bought;
-            fac->cash += price * bought;
+            fac->cash += payment;       // direct money transfer
+            fac->money_gained += payment;  // record for Mean_cash
             fac->stock_sold += bought;
 
-            if (good_type == "Food")
+            if (good_type == "Food") {
                 Pops->at(pop_idx).Goods["Food"] += bought;
-            else
+                if (pop_idx < food_bought.size()) food_bought[pop_idx] += bought;
+            } else {
                 Pops->at(pop_idx).Goods["Cloth"] += bought;
+            }
         }
     }
 

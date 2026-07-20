@@ -14,14 +14,14 @@ using namespace std;
 
 class Government {
 public:
-    float reserve=0;
+    double reserve=0;
     float tax_rate=0;
     int n_food=0;
     float gdp=0;
     int n_tot=0;
-    Market* market;
-    vector< Factory*>* fact_;
-    vector< Pop>* pop_;
+    Market* market = nullptr;
+    vector< Factory*>* fact_ = nullptr;
+    vector< Pop>* pop_ = nullptr;
     Government(vector<Factory*>* x ,vector<Pop>* y,float z, Market* q){
       fact_=x;
       pop_=y;

@@ -16,6 +16,7 @@ using namespace std;
 // Census: aggregate total population, food held, and GDP across all agents.
 // GDP = sum over factories of production * market price for that good's type.
 void Government::Census(){
+    if (pop_ == nullptr || fact_ == nullptr || market == nullptr) return;
     for (auto & i : *pop_) {
         n_tot=n_tot+i.number;
         n_food=n_food+i.Goods["Food"];

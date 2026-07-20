@@ -6,7 +6,11 @@
 
   "n_agents": 200,
 
-  "TAX_RATE": 0.0
+  "TAX_RATE": 0.0,
+
+  "INITIAL_MONEY": 10000,
+
+  "RANDOM_SEED": 12345
 
 
 

@@ -28,6 +28,7 @@ Factory::Factory(Pop* insert_pop, Market* insert_good, Government* insert_gov, n
     sigma_sostitution = (sigma - 1) / sigma;
     my_price = 10.0f;
     money_gained = salary;  // seed initial Mean_cash so first salary isn't 0
+    workforce = insert_pop ? insert_pop->number : 0;
 }
 
 // Capital throughput: maps investment to a (0,1] efficiency factor.
@@ -38,34 +39,37 @@ float Factory::Troughput(){
 
 // CES production: Q = A * [a*K^rho + (1-a)*L^rho]^(1/rho)
 void Factory::Production(){
-    int workers_count = std::max(1, workers ? workers->number : 0);
+    if (workforce <= 0) {
+        production = 0;
+        stock_sold = 0;
+        return;
+    }
+    int workers_count = workforce;
     production = Efficiency_parameter*
         pow((distribution_parameter*pow(std::max(1.0f, investment), sigma_sostitution)
            + (1-distribution_parameter)*pow(float(workers_count), sigma_sostitution)),
            1/sigma_sostitution);
     markets->Stats[type+"_produced"] = markets->Stats[type+"_produced"] + production;
     stock_sold = 0;
-    // money_gained from previous iteration persists — updated by Market::ClearMarket
 };
 
 // Salary = rolling average of revenue, capped by available cash.
-// The factory cannot pay more than it has earned + current revenue.
+// Market already deposited revenue into cash. Just pay from cash balance.
 void Factory::Salary(){
-    float target = Mean_cash_12_months();
-    if (target < 0) target = money_gained;
+    double target = Mean_cash_12_months();
     if (target < 0) target = 0;
-    salary = std::min(target, cash + money_gained);
+    if (worker_count == 0 || workforce == 0) return;
+    salary = std::min(target, cash);
     if (salary < 0) salary = 0;
     cash = cash - salary;
-    if (cash < 0) cash = 0;
 };
 
-float Factory::salary_(){
+double Factory::salary_(){
     return salary;
 };
 
 // Sliding 12-month average: ring buffer with O(1) insert and O(1) mean.
-float Factory::Mean_cash_12_months(){
+double Factory::Mean_cash_12_months(){
     if (cash_ring_count < 12) {
         cash_12_months.push_back(money_gained);
         cash_ring_sum += money_gained;
@@ -83,6 +87,10 @@ float Factory::Mean_cash_12_months(){
 // Price is market-driven, not cost-driven — breaks the salary→price→salary loop.
 // Sutton (1991): competitive firms are price-takers, adjusting to market.
 void Factory::CalculatePrice(){
+    if (production <= 0) {
+        unit_cost = 0;
+        return;
+    }
     float market_price = markets->Stats[type+"_value"];
     if (market_price <= 0) market_price = my_price;
 
@@ -96,29 +104,24 @@ void Factory::CalculatePrice(){
 
     // Smooth adjustment (15% per iteration toward target)
     my_price += 0.15f * (target - my_price);
-    if (my_price < 0.01f) my_price = 0.01f;
-
     // Unit cost for debug only — not used in pricing
     unit_cost = (production > 0) ? salary / production : 0;
 }
 
-// Hire from unemployment pool when demand exceeds supply.
-// Firing happens naturally via population starvation.
-// Greenwald & Stiglitz (1993) — employment adjusts to sales ratio.
+// Hire unemployed population groups when demand exceeds supply.
+// Greenwald & Stiglitz (1993) motivates employment following sales demand.
 void Factory::AdjustWorkforce(vector<Pop>& pops, vector<Pop*>& unemployed){
     if (production <= 0 || workers == nullptr) return;
     float sales_ratio = stock_sold / production;
 
     if (sales_ratio > 0.95f && !unemployed.empty()) {
-        // Near full demand — hire from unemployment pool
+        // High demand — hire from unemployment pool
         int hire_count = std::min((int)unemployed.size(), 2);
         for (int h = 0; h < hire_count; h++) {
             Pop* hiree = unemployed.back();
             unemployed.pop_back();
-            if (hiree->factory != workers->factory) {  // don't re-hire our own ex-workers
+            if (hiree->factory != this) {
                 hiree->factory = this;
-                hiree->number = std::max(1, workers->number / 4);  // seed new pop
-                hiree->money = salary * 2;  // starting bonus
             }
         }
     }

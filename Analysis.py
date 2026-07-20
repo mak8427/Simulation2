@@ -31,7 +31,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from tqdm import tqdm
 
 # ---------------------------------------------------------------------------
-SIM_CSV = "cmake-build-debug/data.csv"
+SIM_CSV = os.environ.get("SIM_CSV")
 DEFINES_JSON = "Defines.json"
 GIF_OUTPUT = "test.gif"
 
@@ -532,6 +532,26 @@ def convert_video_to_gif(video_path: Path, gif_path: Path, fps: float) -> None:
         palette_path.unlink(missing_ok=True)
 
 
+def simulation_csv_path() -> Path:
+    """Find the newest simulation output unless SIM_CSV is explicit."""
+    if SIM_CSV:
+        path = Path(SIM_CSV)
+        if not path.is_file():
+            raise FileNotFoundError(f"SIM_CSV does not exist: {path}")
+        return path
+
+    candidates = [
+        Path("build/data.csv"),
+        Path("cmake-build-debug/data.csv"),
+        Path("data.csv"),
+    ]
+    existing = [path for path in candidates if path.is_file()]
+    if not existing:
+        searched = ", ".join(str(path) for path in candidates)
+        raise FileNotFoundError(f"No simulation CSV found; searched: {searched}")
+    return max(existing, key=lambda path: path.stat().st_mtime)
+
+
 def load_simulation_data():
     with open(DEFINES_JSON, "r", encoding="utf-8") as file:
         defines = json.load(file)
@@ -539,7 +559,7 @@ def load_simulation_data():
     n_populations = int(defines["n_agents"]) + 1
     configured_levels = int(defines["ITERATIONS"])
 
-    dataframe = pd.read_csv(SIM_CSV)
+    dataframe = pd.read_csv(simulation_csv_path())
     n_levels = min(configured_levels, len(dataframe))
     if n_levels <= 0:
         raise ValueError("The CSV contains no simulation levels.")
@@ -566,6 +586,10 @@ def load_simulation_data():
             for index in range(n_populations)
         ]
     )
+    bid_order = np.argsort(-population_bid, axis=0)
+    population_bid = np.take_along_axis(population_bid, bid_order, axis=0)
+    population_bought = np.take_along_axis(population_bought, bid_order, axis=0)
+    population_size = np.take_along_axis(population_size, bid_order, axis=0)
     cumulative_bought = np.cumsum(population_bought, axis=0, dtype=np.float64)
 
     return (
